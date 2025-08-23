@@ -1,0 +1,2733 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Yo'l yo'lakay API",
+        "version": "v1"
+    },
+    "host": "127.0.0.1:7000",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/api",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "Basic": {
+            "type": "basic"
+        }
+    },
+    "security": [
+        {
+            "Basic": []
+        }
+    ],
+    "paths": {
+        "/auth/user/": {
+            "get": {
+                "operationId": "auth_user_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "put": {
+                "operationId": "auth_user_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "patch": {
+                "operationId": "auth_user_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "parameters": []
+        },
+        "/bot-settings/": {
+            "get": {
+                "operationId": "bot-settings_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "put": {
+                "operationId": "bot-settings_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "patch": {
+                "operationId": "bot-settings_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "parameters": []
+        },
+        "/cards/": {
+            "get": {
+                "operationId": "cards_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Card"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "post": {
+                "operationId": "cards_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "parameters": []
+        },
+        "/cards/{id}/": {
+            "get": {
+                "operationId": "cards_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "put": {
+                "operationId": "cards_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "patch": {
+                "operationId": "cards_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Card"
+                        }
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "delete": {
+                "operationId": "cards_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "cards"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this card.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/countries/": {
+            "get": {
+                "operationId": "countries_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Country"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "post": {
+                "operationId": "countries_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "parameters": []
+        },
+        "/countries/{id}/": {
+            "get": {
+                "operationId": "countries_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "put": {
+                "operationId": "countries_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "patch": {
+                "operationId": "countries_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Country"
+                        }
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "delete": {
+                "operationId": "countries_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "countries"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this country.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/deport-check-requests/": {
+            "get": {
+                "operationId": "deport-check-requests_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/DeportCheckRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "post": {
+                "operationId": "deport-check-requests_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "parameters": []
+        },
+        "/deport-check-requests/{id}/": {
+            "get": {
+                "operationId": "deport-check-requests_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "put": {
+                "operationId": "deport-check-requests_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "patch": {
+                "operationId": "deport-check-requests_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/DeportCheckRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "delete": {
+                "operationId": "deport-check-requests_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "deport-check-requests"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this deport check request.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/drivers/": {
+            "get": {
+                "operationId": "drivers_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Driver"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "parameters": []
+        },
+        "/drivers/{id}/": {
+            "get": {
+                "operationId": "drivers_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "put": {
+                "operationId": "drivers_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "patch": {
+                "operationId": "drivers_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "delete": {
+                "operationId": "drivers_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this driver.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/invite-links/create/": {
+            "post": {
+                "operationId": "invite-links_create_create",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "invite-links"
+                ]
+            },
+            "parameters": []
+        },
+        "/invite-links/revoke/": {
+            "post": {
+                "operationId": "invite-links_revoke_create",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "invite-links"
+                ]
+            },
+            "parameters": []
+        },
+        "/orders/": {
+            "get": {
+                "operationId": "orders_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Order"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "parameters": []
+        },
+        "/orders/{id}/": {
+            "get": {
+                "operationId": "orders_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "put": {
+                "operationId": "orders_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "patch": {
+                "operationId": "orders_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "delete": {
+                "operationId": "orders_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this order.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/point-prices/": {
+            "get": {
+                "operationId": "point-prices_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/PointPrice"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "post": {
+                "operationId": "point-prices_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "parameters": []
+        },
+        "/point-prices/{id}/": {
+            "get": {
+                "operationId": "point-prices_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "put": {
+                "operationId": "point-prices_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "patch": {
+                "operationId": "point-prices_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPrice"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "delete": {
+                "operationId": "point-prices_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "point-prices"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this point price.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/point-purchase-requests/": {
+            "get": {
+                "operationId": "point-purchase-requests_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/PointPurchaseRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "post": {
+                "operationId": "point-purchase-requests_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "parameters": []
+        },
+        "/point-purchase-requests/{id}/": {
+            "get": {
+                "operationId": "point-purchase-requests_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "put": {
+                "operationId": "point-purchase-requests_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "patch": {
+                "operationId": "point-purchase-requests_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointPurchaseRequest"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "delete": {
+                "operationId": "point-purchase-requests_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "point-purchase-requests"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this point purchase request.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/point-transactions/": {
+            "get": {
+                "operationId": "point-transactions_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/PointTransaction"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "post": {
+                "operationId": "point-transactions_create",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "parameters": []
+        },
+        "/point-transactions/{id}/": {
+            "get": {
+                "operationId": "point-transactions_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "put": {
+                "operationId": "point-transactions_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "patch": {
+                "operationId": "point-transactions_partial_update",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "delete": {
+                "operationId": "point-transactions_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this point transaction.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/statistics/": {
+            "get": {
+                "operationId": "statistics_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/OrderStatistics"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "statistics"
+                ]
+            },
+            "parameters": []
+        },
+        "/token/": {
+            "post": {
+                "operationId": "token_create",
+                "description": "Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TokenObtainPair"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/TokenObtainPair"
+                        }
+                    }
+                },
+                "tags": [
+                    "token"
+                ]
+            },
+            "parameters": []
+        },
+        "/token/refresh/": {
+            "post": {
+                "operationId": "token_refresh_create",
+                "description": "Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TokenRefresh"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/TokenRefresh"
+                        }
+                    }
+                },
+                "tags": [
+                    "token"
+                ]
+            },
+            "parameters": []
+        },
+        "/users/": {
+            "get": {
+                "operationId": "users_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "parameters": []
+        },
+        "/users/search/": {
+            "get": {
+                "operationId": "users_search_list",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "parameters": []
+        },
+        "/users/{id}/": {
+            "get": {
+                "operationId": "users_read",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "delete": {
+                "operationId": "users_delete",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this user.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "AuthUser": {
+            "required": [
+                "username"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                    "type": "string",
+                    "pattern": "^[\w.@+-]+$",
+                    "maxLength": 150,
+                    "minLength": 1
+                },
+                "email": {
+                    "title": "Email address",
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                },
+                "first_name": {
+                    "title": "First name",
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "last_name": {
+                    "title": "Last name",
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "is_staff": {
+                    "title": "Staff status",
+                    "description": "Designates whether the user can log into this admin site.",
+                    "type": "boolean"
+                },
+                "is_active": {
+                    "title": "Active",
+                    "description": "Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                    "type": "boolean"
+                },
+                "date_joined": {
+                    "title": "Date joined",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "User": {
+            "required": [
+                "telegram_id"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "telegram_id": {
+                    "title": "Telegram id",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "full_name": {
+                    "title": "Full name",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "phone_number": {
+                    "title": "Phone number",
+                    "type": "string",
+                    "maxLength": 20,
+                    "x-nullable": true
+                },
+                "language": {
+                    "title": "Language",
+                    "type": "string",
+                    "maxLength": 5,
+                    "minLength": 1
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "BotSettings": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "driver_request_group_id": {
+                    "title": "Driver request group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "taxi_group_id": {
+                    "title": "Taxi group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "gruz_group_id": {
+                    "title": "Gruz group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "avia_group_id": {
+                    "title": "Avia group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "point_purchase_group_id": {
+                    "title": "Point purchase group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "deport_check_group_id": {
+                    "title": "Deport check group id",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "deport_price": {
+                    "title": "Deport price",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000,
+                    "x-nullable": true
+                },
+                "admin_username": {
+                    "title": "Admin username",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    },
+                    "readOnly": true
+                },
+                "admin_ids": {
+                    "description": "List of User IDs to set as admins",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "Card": {
+            "required": [
+                "card_number",
+                "card_holder_name",
+                "bank_name"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "card_number": {
+                    "title": "Card number",
+                    "type": "string",
+                    "maxLength": 16,
+                    "minLength": 1
+                },
+                "card_holder_name": {
+                    "title": "Card holder name",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "bank_name": {
+                    "title": "Bank name",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "is_active": {
+                    "title": "Is active",
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "Country": {
+            "required": [
+                "code",
+                "name_uz",
+                "name_ru"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "code": {
+                    "title": "Code",
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 1
+                },
+                "name_uz": {
+                    "title": "Name uz",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "name_ru": {
+                    "title": "Name ru",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "name_cy": {
+                    "title": "Name cy",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "name_tj": {
+                    "title": "Name tj",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "name_kz": {
+                    "title": "Name kz",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "DeportCheckRequest": {
+            "required": [
+                "user_id",
+                "phone_number"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "user_id": {
+                    "title": "User id",
+                    "type": "integer"
+                },
+                "phone_number": {
+                    "title": "Phone number",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1
+                },
+                "passport_photo": {
+                    "title": "Passport photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "passport_photo_url": {
+                    "title": "Passport photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "processing",
+                        "completed",
+                        "rejected"
+                    ]
+                },
+                "status_display": {
+                    "title": "Status display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "admin_screenshot": {
+                    "title": "Admin screenshot",
+                    "type": "string",
+                    "readOnly": true,
+                    "x-nullable": true,
+                    "format": "uri"
+                },
+                "admin_screenshot_url": {
+                    "title": "Admin screenshot url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "admin_comment": {
+                    "title": "Admin comment",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "Driver": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "passport_photo": {
+                    "title": "Passport photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "passport_photo_url": {
+                    "title": "Passport photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "direction": {
+                    "title": "Direction",
+                    "type": "string",
+                    "enum": [
+                        "taxi"
+                    ]
+                },
+                "direction_display": {
+                    "title": "Direction display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "driver_license_photo": {
+                    "title": "Driver license photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "driver_license_photo_url": {
+                    "title": "Driver license photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "sts_photo": {
+                    "title": "Sts photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "sts_photo_url": {
+                    "title": "Sts photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "car_photo": {
+                    "title": "Car photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "car_photo_url": {
+                    "title": "Car photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "is_approved": {
+                    "title": "Is approved",
+                    "type": "boolean"
+                },
+                "points": {
+                    "title": "Points",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "rating": {
+                    "title": "Rating",
+                    "type": "number",
+                    "maximum": 5,
+                    "minimum": 0
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "Order": {
+            "required": [
+                "order_type",
+                "full_name",
+                "phone_number",
+                "from_country",
+                "to_country",
+                "order_date"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "driver": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "claimed_by": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "claimed_at": {
+                    "title": "Claimed at",
+                    "type": "string",
+                    "format": "date-time",
+                    "x-nullable": true
+                },
+                "order_type": {
+                    "title": "Order type",
+                    "type": "string",
+                    "enum": [
+                        "taxi",
+                        "package",
+                        "plane",
+                        "train"
+                    ]
+                },
+                "order_type_display": {
+                    "title": "Order type display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "full_name": {
+                    "title": "Full name",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "phone_number": {
+                    "title": "Phone number",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1
+                },
+                "from_country": {
+                    "title": "From country",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "from_location": {
+                    "title": "From location",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "from_region": {
+                    "title": "From region",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "to_country": {
+                    "title": "To country",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "to_location": {
+                    "title": "To location",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "to_region": {
+                    "title": "To region",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "order_date": {
+                    "title": "Order date",
+                    "type": "string",
+                    "format": "date"
+                },
+                "num_passengers": {
+                    "title": "Num passengers",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000,
+                    "x-nullable": true
+                },
+                "item_description": {
+                    "title": "Item description",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "weight_tons": {
+                    "title": "Weight tons",
+                    "type": "number",
+                    "x-nullable": true
+                },
+                "payment_amount": {
+                    "title": "Payment amount",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "terms": {
+                    "title": "Terms",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "comment": {
+                    "title": "Comment",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "accepted",
+                        "completed",
+                        "cancelled",
+                        "rejected"
+                    ]
+                },
+                "status_display": {
+                    "title": "Status display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "passport": {
+                    "title": "Passport",
+                    "type": "string",
+                    "readOnly": true,
+                    "x-nullable": true,
+                    "format": "uri"
+                },
+                "passport_url": {
+                    "title": "Passport url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "PointPrice": {
+            "required": [
+                "name",
+                "service",
+                "point_amount",
+                "price"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "service": {
+                    "title": "Service",
+                    "type": "string",
+                    "enum": [
+                        "taxi_package"
+                    ]
+                },
+                "service_display": {
+                    "title": "Service display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "point_amount": {
+                    "title": "Point amount",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "price": {
+                    "title": "Price",
+                    "type": "string",
+                    "format": "decimal"
+                },
+                "discount_percentage": {
+                    "title": "Discount percentage",
+                    "type": "string",
+                    "format": "decimal"
+                },
+                "final_price": {
+                    "title": "Final price",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "order_number": {
+                    "title": "Order number",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "is_active": {
+                    "title": "Is active",
+                    "type": "boolean"
+                },
+                "is_popular": {
+                    "title": "Is popular",
+                    "type": "boolean"
+                },
+                "description": {
+                    "title": "Description",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "PointPurchaseRequest": {
+            "required": [
+                "driver_id",
+                "point_price_id",
+                "card_number"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "driver": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "driver_id": {
+                    "title": "Driver id",
+                    "type": "integer"
+                },
+                "point_price": {
+                    "$ref": "#/definitions/PointPrice"
+                },
+                "point_price_id": {
+                    "title": "Point price id",
+                    "type": "integer"
+                },
+                "card_number": {
+                    "title": "Card number",
+                    "type": "string",
+                    "maxLength": 16,
+                    "minLength": 1
+                },
+                "receipt_photo": {
+                    "title": "Receipt photo",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "receipt_photo_url": {
+                    "title": "Receipt photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "approved",
+                        "rejected"
+                    ]
+                },
+                "status_display": {
+                    "title": "Status display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "admin_comment": {
+                    "title": "Admin comment",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Updated at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "PointTransaction": {
+            "required": [
+                "driver_id",
+                "amount",
+                "transaction_type"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "driver": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "driver_id": {
+                    "title": "Driver id",
+                    "type": "integer"
+                },
+                "amount": {
+                    "title": "Amount",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "transaction_type": {
+                    "title": "Transaction type",
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "subtract"
+                    ]
+                },
+                "transaction_type_display": {
+                    "title": "Transaction type display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "reason": {
+                    "title": "Reason",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Created at",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "OrderStatistics": {
+            "required": [
+                "total_orders",
+                "pending_orders",
+                "completed_orders",
+                "total_users",
+                "total_drivers",
+                "approved_drivers",
+                "pending_drivers",
+                "today_orders",
+                "yesterday_orders",
+                "this_week_orders",
+                "last_week_orders",
+                "taxi_orders",
+                "package_orders",
+                "plane_orders",
+                "train_orders",
+                "recent_orders_by_day"
+            ],
+            "type": "object",
+            "properties": {
+                "total_orders": {
+                    "title": "Total orders",
+                    "type": "integer"
+                },
+                "pending_orders": {
+                    "title": "Pending orders",
+                    "type": "integer"
+                },
+                "completed_orders": {
+                    "title": "Completed orders",
+                    "type": "integer"
+                },
+                "total_users": {
+                    "title": "Total users",
+                    "type": "integer"
+                },
+                "total_drivers": {
+                    "title": "Total drivers",
+                    "type": "integer"
+                },
+                "approved_drivers": {
+                    "title": "Approved drivers",
+                    "type": "integer"
+                },
+                "pending_drivers": {
+                    "title": "Pending drivers",
+                    "type": "integer"
+                },
+                "today_orders": {
+                    "title": "Today orders",
+                    "type": "integer"
+                },
+                "yesterday_orders": {
+                    "title": "Yesterday orders",
+                    "type": "integer"
+                },
+                "this_week_orders": {
+                    "title": "This week orders",
+                    "type": "integer"
+                },
+                "last_week_orders": {
+                    "title": "Last week orders",
+                    "type": "integer"
+                },
+                "taxi_orders": {
+                    "title": "Taxi orders",
+                    "type": "integer"
+                },
+                "package_orders": {
+                    "title": "Package orders",
+                    "type": "integer"
+                },
+                "plane_orders": {
+                    "title": "Plane orders",
+                    "type": "integer"
+                },
+                "train_orders": {
+                    "title": "Train orders",
+                    "type": "integer"
+                },
+                "recent_orders_by_day": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "x-nullable": true
+                        }
+                    }
+                }
+            }
+        },
+        "TokenObtainPair": {
+            "required": [
+                "username",
+                "password"
+            ],
+            "type": "object",
+            "properties": {
+                "username": {
+                    "title": "Username",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "title": "Password",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "TokenRefresh": {
+            "required": [
+                "refresh"
+            ],
+            "type": "object",
+            "properties": {
+                "refresh": {
+                    "title": "Refresh",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "access": {
+                    "title": "Access",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                }
+            }
+        }
+    }
+}

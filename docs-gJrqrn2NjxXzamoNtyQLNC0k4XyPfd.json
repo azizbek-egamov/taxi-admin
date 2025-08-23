@@ -1,0 +1,1355 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Yo'l yo'lakay API",
+        "version": "v1"
+    },
+    "host": "127.0.0.1:8000",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/api",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "Basic": {
+            "type": "basic"
+        }
+    },
+    "security": [
+        {
+            "Basic": []
+        }
+    ],
+    "paths": {
+        "/auth/user/": {
+            "get": {
+                "operationId": "auth_user_read",
+                "description": "Get current authenticated Django user info",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "put": {
+                "operationId": "auth_user_update",
+                "description": "Get current authenticated Django user info",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "patch": {
+                "operationId": "auth_user_partial_update",
+                "description": "Get current authenticated Django user info",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AuthUser"
+                        }
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "parameters": []
+        },
+        "/bot-settings/": {
+            "get": {
+                "operationId": "bot-settings_read",
+                "description": "Get and update bot settings",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "put": {
+                "operationId": "bot-settings_update",
+                "description": "Get and update bot settings",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "patch": {
+                "operationId": "bot-settings_partial_update",
+                "description": "Get and update bot settings",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/BotSettings"
+                        }
+                    }
+                },
+                "tags": [
+                    "bot-settings"
+                ]
+            },
+            "parameters": []
+        },
+        "/drivers/": {
+            "get": {
+                "operationId": "drivers_list",
+                "description": "List all drivers with filtering options",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Driver"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "parameters": []
+        },
+        "/drivers/{id}/": {
+            "get": {
+                "operationId": "drivers_read",
+                "description": "Get and update driver details",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "put": {
+                "operationId": "drivers_update",
+                "description": "Get and update driver details",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "patch": {
+                "operationId": "drivers_partial_update",
+                "description": "Get and update driver details",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Driver"
+                        }
+                    }
+                },
+                "tags": [
+                    "drivers"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this Haydovchi.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/invite-links/create/": {
+            "post": {
+                "operationId": "invite-links_create_create",
+                "description": "Create invite link for a Telegram group",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "invite-links"
+                ]
+            },
+            "parameters": []
+        },
+        "/invite-links/revoke/": {
+            "post": {
+                "operationId": "invite-links_revoke_create",
+                "description": "Revoke invite link for a Telegram group",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "invite-links"
+                ]
+            },
+            "parameters": []
+        },
+        "/orders/": {
+            "get": {
+                "operationId": "orders_list",
+                "description": "List all orders with filtering options",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Order"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "parameters": []
+        },
+        "/orders/{id}/": {
+            "get": {
+                "operationId": "orders_read",
+                "description": "Get and update order details",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "put": {
+                "operationId": "orders_update",
+                "description": "Get and update order details",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "patch": {
+                "operationId": "orders_partial_update",
+                "description": "Get and update order details",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                },
+                "tags": [
+                    "orders"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this Buyurtma.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        },
+        "/point-transactions/": {
+            "get": {
+                "operationId": "point-transactions_list",
+                "description": "List and create point transactions",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/PointTransaction"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "post": {
+                "operationId": "point-transactions_create",
+                "description": "List and create point transactions",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PointTransaction"
+                        }
+                    }
+                },
+                "tags": [
+                    "point-transactions"
+                ]
+            },
+            "parameters": []
+        },
+        "/statistics/": {
+            "get": {
+                "operationId": "statistics_list",
+                "description": "Get order and user statistics",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/OrderStatistics"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "statistics"
+                ]
+            },
+            "parameters": []
+        },
+        "/token/": {
+            "post": {
+                "operationId": "token_create",
+                "description": "Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TokenObtainPair"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/TokenObtainPair"
+                        }
+                    }
+                },
+                "tags": [
+                    "token"
+                ]
+            },
+            "parameters": []
+        },
+        "/token/refresh/": {
+            "post": {
+                "operationId": "token_refresh_create",
+                "description": "Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TokenRefresh"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/TokenRefresh"
+                        }
+                    }
+                },
+                "tags": [
+                    "token"
+                ]
+            },
+            "parameters": []
+        },
+        "/users/": {
+            "get": {
+                "operationId": "users_list",
+                "description": "List all users",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "required": false,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "required": [
+                                "count",
+                                "results"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "next": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "previous": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "x-nullable": true
+                                },
+                                "results": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "parameters": []
+        },
+        "/users/{id}/": {
+            "get": {
+                "operationId": "users_read",
+                "description": "Get user details",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "A unique integer value identifying this Foydalanuvchi.",
+                    "required": true,
+                    "type": "integer"
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "AuthUser": {
+            "required": [
+                "username"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                    "type": "string",
+                    "pattern": "^[\w.@+-]+$",
+                    "maxLength": 150,
+                    "minLength": 1
+                },
+                "email": {
+                    "title": "Email address",
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                },
+                "first_name": {
+                    "title": "First name",
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "last_name": {
+                    "title": "Last name",
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "is_staff": {
+                    "title": "Staff status",
+                    "description": "Designates whether the user can log into this admin site.",
+                    "type": "boolean"
+                },
+                "is_active": {
+                    "title": "Active",
+                    "description": "Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                    "type": "boolean"
+                },
+                "date_joined": {
+                    "title": "Date joined",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "User": {
+            "required": [
+                "telegram_id"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "telegram_id": {
+                    "title": "Telegram ID",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "full_name": {
+                    "title": "To'liq ism",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "phone_number": {
+                    "title": "Telefon raqam",
+                    "type": "string",
+                    "maxLength": 20,
+                    "x-nullable": true
+                },
+                "language": {
+                    "title": "Til",
+                    "type": "string",
+                    "maxLength": 5,
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Yaratilgan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Yangilangan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "BotSettings": {
+            "required": [
+                "driver_request_group_id",
+                "taxi_group_id",
+                "gruz_group_id",
+                "avia_group_id"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "driver_request_group_id": {
+                    "title": "Haydovchi arizalari guruhi ID",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "taxi_group_id": {
+                    "title": "Taksi buyurtmalari guruhi ID",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "gruz_group_id": {
+                    "title": "Gruz buyurtmalari guruhi ID",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "avia_group_id": {
+                    "title": "Aviabilet/Poyezd buyurtmalari guruhi ID",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    },
+                    "readOnly": true
+                },
+                "admin_ids": {
+                    "description": "List of User IDs to set as admins",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "Driver": {
+            "required": [
+                "car_make",
+                "car_year",
+                "car_number"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "passport_photo": {
+                    "title": "Pasport rasmi",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "passport_photo_url": {
+                    "title": "Passport photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "direction": {
+                    "title": "Yo'nalish",
+                    "type": "string",
+                    "enum": [
+                        "1",
+                        "2"
+                    ],
+                    "x-nullable": true
+                },
+                "direction_display": {
+                    "title": "Direction display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "driver_license_photo": {
+                    "title": "Haydovchilik guvohnomasi",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "driver_license_photo_url": {
+                    "title": "Driver license photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "sts_photo": {
+                    "title": "STS (avto hujjat)",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "sts_photo_url": {
+                    "title": "Sts photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "car_make": {
+                    "title": "Avtomobil markasi",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "car_year": {
+                    "title": "Avtomobil yili",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "car_number": {
+                    "title": "Avtomobil raqami",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "car_photo": {
+                    "title": "Avtomobil rasmi",
+                    "type": "string",
+                    "readOnly": true,
+                    "format": "uri"
+                },
+                "car_photo_url": {
+                    "title": "Car photo url",
+                    "type": "string",
+                    "readOnly": true
+                },
+                "is_approved": {
+                    "title": "Tasdiqlangan",
+                    "type": "boolean"
+                },
+                "points": {
+                    "title": "Ballar",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "rating": {
+                    "title": "Reyting",
+                    "type": "number"
+                },
+                "region": {
+                    "title": "Viloyat",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "car_capacity": {
+                    "title": "Mashina sig'imi (tonna)",
+                    "type": "number",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Yaratilgan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Yangilangan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "Order": {
+            "required": [
+                "order_type",
+                "full_name",
+                "phone_number"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "driver": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "order_type": {
+                    "title": "Buyurtma turi",
+                    "type": "string",
+                    "enum": [
+                        "taxi",
+                        "package",
+                        "cargo",
+                        "plane",
+                        "train"
+                    ]
+                },
+                "order_type_display": {
+                    "title": "Order type display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "full_name": {
+                    "title": "To'liq ism",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "phone_number": {
+                    "title": "Telefon raqam",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1
+                },
+                "from_country": {
+                    "title": "Qayerdan (davlat)",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "from_location": {
+                    "title": "Qayerdan (manzil)",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "from_region": {
+                    "title": "Qayerdan (viloyat)",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "to_country": {
+                    "title": "Qayerga (davlat)",
+                    "type": "string",
+                    "maxLength": 100,
+                    "x-nullable": true
+                },
+                "to_location": {
+                    "title": "Qayerga (manzil)",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "to_region": {
+                    "title": "Qayerga (viloyat)",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "order_date": {
+                    "title": "Sana",
+                    "type": "string",
+                    "format": "date",
+                    "x-nullable": true
+                },
+                "num_passengers": {
+                    "title": "Yo'lovchilar soni",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000,
+                    "x-nullable": true
+                },
+                "item_description": {
+                    "title": "Yuborilayotgan narsa",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "weight_tons": {
+                    "title": "Vazni (tonna)",
+                    "type": "number",
+                    "x-nullable": true
+                },
+                "payment_amount": {
+                    "title": "To'lov miqdori",
+                    "type": "string",
+                    "maxLength": 255,
+                    "x-nullable": true
+                },
+                "terms": {
+                    "title": "Shartlar",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "comment": {
+                    "title": "Izoh",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "status": {
+                    "title": "Holat",
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "accepted",
+                        "completed",
+                        "cancelled",
+                        "rejected"
+                    ]
+                },
+                "status_display": {
+                    "title": "Status display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "created_at": {
+                    "title": "Yaratilgan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "title": "Yangilangan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "PointTransaction": {
+            "required": [
+                "driver_id",
+                "amount",
+                "transaction_type"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "ID",
+                    "type": "integer",
+                    "readOnly": true
+                },
+                "driver": {
+                    "$ref": "#/definitions/Driver"
+                },
+                "driver_id": {
+                    "title": "Driver id",
+                    "type": "integer"
+                },
+                "amount": {
+                    "title": "Miqdor",
+                    "type": "integer",
+                    "maximum": "9223372036854775807",
+                    "minimum": -9223372036854776000
+                },
+                "transaction_type": {
+                    "title": "Tranzaksiya turi",
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "deduct"
+                    ]
+                },
+                "transaction_type_display": {
+                    "title": "Transaction type display",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                },
+                "reason": {
+                    "title": "Sabab",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "created_at": {
+                    "title": "Yaratilgan vaqt",
+                    "type": "string",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "OrderStatistics": {
+            "required": [
+                "total_orders",
+                "pending_orders",
+                "completed_orders",
+                "total_users",
+                "total_drivers",
+                "approved_drivers",
+                "pending_drivers",
+                "today_orders",
+                "yesterday_orders",
+                "this_week_orders",
+                "last_week_orders",
+                "taxi_orders",
+                "package_orders",
+                "cargo_orders",
+                "plane_orders",
+                "train_orders",
+                "recent_orders_by_day"
+            ],
+            "type": "object",
+            "properties": {
+                "total_orders": {
+                    "title": "Total orders",
+                    "type": "integer"
+                },
+                "pending_orders": {
+                    "title": "Pending orders",
+                    "type": "integer"
+                },
+                "completed_orders": {
+                    "title": "Completed orders",
+                    "type": "integer"
+                },
+                "total_users": {
+                    "title": "Total users",
+                    "type": "integer"
+                },
+                "total_drivers": {
+                    "title": "Total drivers",
+                    "type": "integer"
+                },
+                "approved_drivers": {
+                    "title": "Approved drivers",
+                    "type": "integer"
+                },
+                "pending_drivers": {
+                    "title": "Pending drivers",
+                    "type": "integer"
+                },
+                "today_orders": {
+                    "title": "Today orders",
+                    "type": "integer"
+                },
+                "yesterday_orders": {
+                    "title": "Yesterday orders",
+                    "type": "integer"
+                },
+                "this_week_orders": {
+                    "title": "This week orders",
+                    "type": "integer"
+                },
+                "last_week_orders": {
+                    "title": "Last week orders",
+                    "type": "integer"
+                },
+                "taxi_orders": {
+                    "title": "Taxi orders",
+                    "type": "integer"
+                },
+                "package_orders": {
+                    "title": "Package orders",
+                    "type": "integer"
+                },
+                "cargo_orders": {
+                    "title": "Cargo orders",
+                    "type": "integer"
+                },
+                "plane_orders": {
+                    "title": "Plane orders",
+                    "type": "integer"
+                },
+                "train_orders": {
+                    "title": "Train orders",
+                    "type": "integer"
+                },
+                "recent_orders_by_day": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "x-nullable": true
+                        }
+                    }
+                }
+            }
+        },
+        "TokenObtainPair": {
+            "required": [
+                "username",
+                "password"
+            ],
+            "type": "object",
+            "properties": {
+                "username": {
+                    "title": "Username",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "title": "Password",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "TokenRefresh": {
+            "required": [
+                "refresh"
+            ],
+            "type": "object",
+            "properties": {
+                "refresh": {
+                    "title": "Refresh",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "access": {
+                    "title": "Access",
+                    "type": "string",
+                    "readOnly": true,
+                    "minLength": 1
+                }
+            }
+        }
+    }
+}
