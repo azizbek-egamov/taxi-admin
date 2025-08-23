@@ -37,7 +37,7 @@ export default function BotSettingsPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
         <Tabs defaultValue="group-ids" className="w-full" onValueChange={setActiveTab}>
           <div className="overflow-x-auto">
-            <TabsList className="flex min-w-[600px] w-full gap-4 h-auto">
+            <TabsList className="flex flex-nowrap w-full gap-4 h-auto">
             <TabsTrigger value="group-ids" className="flex items-center gap-3">
               <MessageSquare className="h-4 w-4" />
               Guruh ID lari
