@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,23 +26,50 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Package, Clock, CheckSquare, XCircle, Search, Phone, MapPin, Calendar, Eye, Trash2, Loader2, Filter, Download, RefreshCw, DollarSign, User, Image as ImageIcon } from "lucide-react"
+import {
+  Package,
+  Clock,
+  CheckSquare,
+  XCircle,
+  Search,
+  Phone,
+  MapPin,
+  Calendar,
+  Eye,
+  Trash2,
+  Loader2,
+  Filter,
+  Download,
+  RefreshCw,
+  User,
+  ImageIcon,
+  X,
+} from "lucide-react"
 import { apiClient, type Order, type Driver } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [allOrders, setAllOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [orderNumberSearch, setOrderNumberSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("")
+  const [appliedOrderNumberSearch, setAppliedOrderNumberSearch] = useState("")
+  const [appliedStatusFilter, setAppliedStatusFilter] = useState<string>("all")
+  const [appliedTypeFilter, setAppliedTypeFilter] = useState<string>("all")
+
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalOrders, setTotalOrders] = useState(0)
+  const itemsPerPage = 12
+
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [deletingOrderId, setDeletingOrderId] = useState<number | null>(null)
   const [bulkUpdating, setBulkUpdating] = useState(false)
+  const { toast } = useToast()
 
   // Assign driver dialog state
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
@@ -53,84 +80,107 @@ export default function OrdersPage() {
   const [searchingDriver, setSearchingDriver] = useState(false)
 
   useEffect(() => {
-    fetchOrders()
-  }, [currentPage, statusFilter, typeFilter])
+    fetchAllOrders()
+  }, [])
 
-  const fetchOrders = async () => {
+  const fetchAllOrders = async () => {
     try {
       setIsLoading(true)
-      const filters: Record<string, string> = {}
+      let allOrdersData: Order[] = []
+      let currentPage = 1
+      let hasMore = true
 
-      // Default to today's orders
-      const today = new Date()
-      const year = today.getFullYear()
-      const month = String(today.getMonth() + 1).padStart(2, '0')
-      const day = String(today.getDate()).padStart(2, '0')
-      filters.date_from = `${year}-${month}-${day}`
-      filters.date_to = `${year}-${month}-${day}`
+      while (hasMore) {
+        const response = await apiClient.getOrders(currentPage, {})
+        allOrdersData = [...allOrdersData, ...response.results]
 
-      if (statusFilter !== "all") {
-        filters.status = statusFilter
-      }
-
-      if (typeFilter !== "all") {
-        filters.order_type = typeFilter
-      }
-
-      if (searchTerm.trim()) {
-        // If search term is numeric and order type is taxi or package, search by order_number
-        if (!isNaN(Number(searchTerm.trim())) && (typeFilter === "taxi" || typeFilter === "package")) {
-          filters.order_number = searchTerm.trim()
+        if (response.results.length < 20 || !response.next) {
+          hasMore = false
         } else {
-          // Otherwise, search by other fields (id, name, phone) - backend handles this general search
-          filters.search = searchTerm.trim()
+          currentPage++
         }
       }
 
-      const response = await apiClient.getOrders(currentPage, filters)
-      setOrders(response.results)
-      setTotalPages(Math.ceil(response.count / 20))
-      setTotalOrders(response.count)
+      setAllOrders(allOrdersData)
     } catch (error) {
       console.error("Error fetching orders:", error)
+      toast({
+        title: "Xatolik",
+        description: "Buyurtmalarni yuklashda xatolik yuz berdi",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
+    setAppliedSearchTerm(searchTerm)
+    setAppliedOrderNumberSearch(orderNumberSearch)
+    setAppliedStatusFilter(statusFilter)
+    setAppliedTypeFilter(typeFilter)
     setCurrentPage(1)
-    await fetchOrders()
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setOrderNumberSearch("")
+    setStatusFilter("all")
+    setTypeFilter("all")
+    setAppliedSearchTerm("")
+    setAppliedOrderNumberSearch("")
+    setAppliedStatusFilter("all")
+    setAppliedTypeFilter("all")
+    setCurrentPage(1)
   }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchOrders()
+    await fetchAllOrders()
     setIsRefreshing(false)
   }
 
   const handleUpdateOrderStatus = async (orderId: number, status: string) => {
     try {
       await apiClient.updateOrder(orderId, { status: status as any })
-      fetchOrders()
+      setAllOrders(allOrders.map((order) => (order.id === orderId ? { ...order, status: status as any } : order)))
       setIsDialogOpen(false)
+      toast({
+        title: "Muvaffaqiyat",
+        description: "Buyurtma holati yangilandi",
+      })
     } catch (error) {
       console.error("Error updating order:", error)
+      toast({
+        title: "Xatolik",
+        description: "Buyurtma holatini yangilashda xatolik yuz berdi",
+        variant: "destructive",
+      })
     }
   }
 
   const handleBulkStatusUpdate = async (status: string) => {
     try {
       setBulkUpdating(true)
-      const pendingOrders = orders.filter((order) => order.status === "pending")
+      const pendingOrders = filteredOrders.filter((order) => order.status === "pending")
 
       for (const order of pendingOrders) {
         await apiClient.updateOrder(order.id, { status: status as any })
       }
 
-      await fetchOrders()
+      setAllOrders(allOrders.map((order) => (order.status === "pending" ? { ...order, status: status as any } : order)))
+
+      toast({
+        title: "Muvaffaqiyat",
+        description: `${pendingOrders.length} ta buyurtma holati yangilandi`,
+      })
     } catch (error) {
       console.error("Error bulk updating orders:", error)
+      toast({
+        title: "Xatolik",
+        description: "Buyurtmalar holatini yangilashda xatolik yuz berdi",
+        variant: "destructive",
+      })
     } finally {
       setBulkUpdating(false)
     }
@@ -140,16 +190,61 @@ export default function OrdersPage() {
     try {
       setDeletingOrderId(orderId)
       await apiClient.deleteOrder(orderId)
-      setOrders(orders.filter((order) => order.id !== orderId))
-      setTotalOrders(totalOrders - 1)
+      setAllOrders(allOrders.filter((order) => order.id !== orderId))
+      toast({
+        title: "Muvaffaqiyat",
+        description: "Buyurtma muvaffaqiyatli o'chirildi",
+      })
     } catch (error) {
       console.error("Error deleting order:", error)
+      toast({
+        title: "Xatolik",
+        description: "Buyurtmani o'chirishda xatolik yuz berdi",
+        variant: "destructive",
+      })
     } finally {
       setDeletingOrderId(null)
     }
   }
 
-  const displayedOrders = orders
+  const filteredOrders = useMemo(() => {
+    return allOrders.filter((order) => {
+      if (appliedOrderNumberSearch) {
+        const orderNumberMatch = order.order_number && order.order_number.toString() === appliedOrderNumberSearch
+        if (!orderNumberMatch) return false
+      } else if (appliedSearchTerm) {
+        const searchLower = appliedSearchTerm.toLowerCase()
+        const matchesSearch =
+          order.id.toString().includes(searchLower) ||
+          (order.order_number && order.order_number.toString().includes(searchLower)) ||
+          order.full_name.toLowerCase().includes(searchLower) ||
+          order.phone_number.includes(searchLower)
+
+        if (!matchesSearch) return false
+      }
+
+      if (appliedStatusFilter !== "all" && order.status !== appliedStatusFilter) {
+        return false
+      }
+
+      if (appliedTypeFilter !== "all" && order.order_type !== appliedTypeFilter) {
+        return false
+      }
+
+      return true
+    })
+  }, [allOrders, appliedSearchTerm, appliedOrderNumberSearch, appliedStatusFilter, appliedTypeFilter])
+
+  const displayedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredOrders.slice(startIndex, endIndex)
+  }, [filteredOrders, currentPage, itemsPerPage])
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+
+  const hasActiveFilters =
+    appliedSearchTerm || appliedOrderNumberSearch || appliedStatusFilter !== "all" || appliedTypeFilter !== "all"
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -230,7 +325,7 @@ export default function OrdersPage() {
   const handleExportOrders = () => {
     const csvContent = [
       ["ID", "Tur", "Mijoz", "Telefon", "Holat", "Yaratilgan"],
-      ...orders.map((order) => [
+      ...filteredOrders.map((order) => [
         order.id.toString(),
         getOrderTypeDisplay(order.order_type),
         order.full_name,
@@ -251,7 +346,38 @@ export default function OrdersPage() {
     window.URL.revokeObjectURL(url)
   }
 
-  if (isLoading && currentPage === 1) {
+  const fetchOrders = async () => {
+    try {
+      setIsLoading(true)
+      let allOrdersData: Order[] = []
+      let currentPage = 1
+      let hasMore = true
+
+      while (hasMore) {
+        const response = await apiClient.getOrders(currentPage, {})
+        allOrdersData = [...allOrdersData, ...response.results]
+
+        if (response.results.length < 20 || !response.next) {
+          hasMore = false
+        } else {
+          currentPage++
+        }
+      }
+
+      setAllOrders(allOrdersData)
+    } catch (error) {
+      console.error("Error fetching orders:", error)
+      toast({
+        title: "Xatolik",
+        description: "Buyurtmalarni yuklashda xatolik yuz berdi",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -271,7 +397,10 @@ export default function OrdersPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Buyurtmalar</h1>
-                <p className="text-sm text-gray-500">Jami {totalOrders.toLocaleString()} ta buyurtma</p>
+                <p className="text-sm text-gray-500">
+                  Jami {allOrders.length.toLocaleString()} ta buyurtma
+                  {hasActiveFilters && ` • ${filteredOrders.length} ta topildi`}
+                </p>
               </div>
             </div>
             <div className="flex flex-col [@media(max-width:920px)]:flex-col [@media(min-width:921px)]:flex-row items-stretch [@media(max-width:920px)]:items-stretch [@media(min-width:921px)]:items-center gap-2 w-full md:w-auto">
@@ -279,12 +408,17 @@ export default function OrdersPage() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                 Yangilash
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportOrders} disabled={orders.length === 0}>
+              <Button variant="outline" size="sm" onClick={handleExportOrders} disabled={filteredOrders.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
                 Eksport
               </Button>
-              {orders.some((o) => o.status === "pending") && (
-                <Button size="sm" onClick={() => handleBulkStatusUpdate("accepted")} disabled={bulkUpdating} className="bg-blue-600 hover:bg-blue-700">
+              {filteredOrders.some((o) => o.status === "pending") && (
+                <Button
+                  size="sm"
+                  onClick={() => handleBulkStatusUpdate("accepted")}
+                  disabled={bulkUpdating}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
                   <CheckSquare className="w-4 h-4 mr-2" />
                   Barchasini qabul qilish
                 </Button>
@@ -298,18 +432,41 @@ export default function OrdersPage() {
         <Card className="bg-white/80 backdrop-blur-sm border shadow-lg mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 space-y-4">
+                {/* Order Number Search */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">#</span>
+                  <Input
+                    placeholder="Buyurtma raqami..."
+                    value={orderNumberSearch}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "") // Only allow numbers
+                      setOrderNumberSearch(value)
+                      if (value) setSearchTerm("") // Clear general search when order number is entered
+                    }}
+                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                    className="pl-8"
+                    type="text"
+                  />
+                </div>
+
+                {/* General Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Buyurtma ID, ism yoki telefon bo'yicha qidirish..."
+                    placeholder="Mijoz ismi yoki telefon bo'yicha qidirish..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value)
+                      if (e.target.value) setOrderNumberSearch("") // Clear order number search when general search is entered
+                    }}
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                     className="pl-10"
+                    disabled={!!orderNumberSearch} // Disable when order number search has value
                   />
                 </div>
               </div>
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="Holat bo'yicha" />
@@ -336,13 +493,39 @@ export default function OrdersPage() {
                   <SelectItem value="train">Poyezd</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={handleSearch} disabled={isLoading}>
-                <Search className="w-4 h-4 mr-2" />
-                Qidirish
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700">
+                  <Search className="w-4 h-4 mr-2" />
+                  Qidirish
+                </Button>
+                {(appliedSearchTerm ||
+                  appliedOrderNumberSearch ||
+                  appliedStatusFilter !== "all" ||
+                  appliedTypeFilter !== "all") && (
+                  <Button onClick={clearFilters} variant="outline">
+                    <X className="w-4 h-4 mr-2" />
+                    Tozalash
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {(appliedSearchTerm ||
+          appliedOrderNumberSearch ||
+          appliedStatusFilter !== "all" ||
+          appliedTypeFilter !== "all") && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700">
+              <strong>{filteredOrders.length}</strong> ta buyurtma topildi
+              {appliedOrderNumberSearch && ` (Buyurtma raqami: #${appliedOrderNumberSearch})`}
+              {appliedSearchTerm && ` ("${appliedSearchTerm}" bo'yicha)`}
+              {appliedStatusFilter !== "all" && ` (Holat: ${appliedStatusFilter})`}
+              {appliedTypeFilter !== "all" && ` (Tur: ${appliedTypeFilter})`}
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card className="bg-white/80 backdrop-blur-sm border shadow-lg">
@@ -350,7 +533,7 @@ export default function OrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Jami buyurtmalar</p>
-                  <p className="text-2xl font-bold text-blue-600">{totalOrders.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-blue-600">{allOrders.length.toLocaleString()}</p>
                 </div>
                 <Package className="h-8 w-8 text-blue-600" />
               </div>
@@ -361,7 +544,9 @@ export default function OrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Kutilmoqda</p>
-                  <p className="text-2xl font-bold text-yellow-600">{orders.filter((o) => o.status === "pending").length}</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {filteredOrders.filter((o) => o.status === "pending").length}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -372,7 +557,9 @@ export default function OrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Qabul qilingan</p>
-                  <p className="text-2xl font-bold text-blue-600">{orders.filter((o) => o.status === "accepted").length}</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {filteredOrders.filter((o) => o.status === "accepted").length}
+                  </p>
                 </div>
                 <CheckSquare className="h-8 w-8 text-blue-600" />
               </div>
@@ -383,7 +570,9 @@ export default function OrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Yakunlangan</p>
-                  <p className="text-2xl font-bold text-green-600">{orders.filter((o) => o.status === "completed").length}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {filteredOrders.filter((o) => o.status === "completed").length}
+                  </p>
                 </div>
                 <CheckSquare className="h-8 w-8 text-green-600" />
               </div>
@@ -394,7 +583,7 @@ export default function OrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Sahifadagi</p>
-                  <p className="text-2xl font-bold text-purple-600">{orders.length}</p>
+                  <p className="text-2xl font-bold text-purple-600">{displayedOrders.length}</p>
                 </div>
                 <Filter className="h-8 w-8 text-purple-600" />
               </div>
@@ -405,14 +594,24 @@ export default function OrdersPage() {
         {/* Orders Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedOrders.map((order) => (
-            <Card key={order.id} className="bg-white/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover-lift">
+            <Card
+              key={order.id}
+              className="bg-white/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover-lift"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl">{getOrderTypeIcon(order.order_type)}</span>
                     <div>
-                      <CardTitle className="text-lg">#{order.order_number || order.id}</CardTitle>
-                      <CardDescription>{getOrderTypeDisplay(order.order_type)}</CardDescription>
+                      <CardTitle className="text-lg">#{order.id}</CardTitle>
+                      <CardDescription>
+                        {getOrderTypeDisplay(order.order_type)}
+                        {order.order_number && (
+                          <span className="block text-xs text-gray-500 mt-1">
+                            Buyurtma raqami: #{order.order_number}
+                          </span>
+                        )}
+                      </CardDescription>
                     </div>
                   </div>
                   {getStatusBadge(order.status)}
@@ -435,10 +634,15 @@ export default function OrdersPage() {
                     <MapPin className="w-3 h-3 mr-1" />
                     Manzil:
                   </span>
-                  <span className="text-sm text-right max-w-32 truncate" title={order.from_location || order.from_region || ""}>
-                    {(order.from_location || order.from_region || "") + " → " + (order.to_location || order.to_region || "")}
+                  <span
+                    className="text-sm text-right max-w-32 truncate"
+                    title={order.from_location || order.from_region || ""}
+                  >
+                    {(order.from_location || order.from_region || "") +
+                      " → " +
+                      (order.to_location || order.to_region || "")}
                   </span>
-                  </div>
+                </div>
                 {order.driver && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 flex items-center">
@@ -464,7 +668,12 @@ export default function OrdersPage() {
                     }}
                   >
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={() => setSelectedOrder(order)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 bg-transparent"
+                        onClick={() => setSelectedOrder(order)}
+                      >
                         <Eye className="w-4 h-4 mr-2" />
                         Ko'rish
                       </Button>
@@ -472,7 +681,14 @@ export default function OrdersPage() {
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Buyurtma ma'lumotlari</DialogTitle>
-                        <DialogDescription>#{selectedOrder?.order_number || selectedOrder?.id} buyurtmaning to'liq ma'lumotlari</DialogDescription>
+                        <DialogDescription>
+                          #{selectedOrder?.id} buyurtmaning to'liq ma'lumotlari
+                          {selectedOrder?.order_number && (
+                            <span className="block text-sm text-gray-500 mt-1">
+                              Buyurtma raqami: #{selectedOrder.order_number}
+                            </span>
+                          )}
+                        </DialogDescription>
                       </DialogHeader>
 
                       {selectedOrder && (
@@ -506,10 +722,12 @@ export default function OrdersPage() {
                                 <h4 className="font-semibold mb-2">Manzil ma'lumotlari</h4>
                                 <div className="space-y-2 text-sm">
                                   <div>
-                                    <strong>Qayerdan:</strong> {selectedOrder.from_location || selectedOrder.from_region || ""}
+                                    <strong>Qayerdan:</strong>{" "}
+                                    {selectedOrder.from_location || selectedOrder.from_region || ""}
                                   </div>
                                   <div>
-                                    <strong>Qayerga:</strong> {selectedOrder.to_location || selectedOrder.to_region || ""}
+                                    <strong>Qayerga:</strong>{" "}
+                                    {selectedOrder.to_location || selectedOrder.to_region || ""}
                                   </div>
                                 </div>
                               </div>
@@ -518,92 +736,131 @@ export default function OrdersPage() {
 
                           <TabsContent value="details" className="space-y-4">
                             <div className="space-y-4">
-                                <div>
+                              <div>
                                 <h4 className="font-semibold mb-2">Qo'shimcha ma'lumotlar</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                   <div className="bg-gray-50 p-3 rounded-lg">
-                                    <strong>Buyurtma ID:</strong> #{selectedOrder.order_number || selectedOrder.id}
+                                    <strong>Buyurtma ID:</strong> #{selectedOrder.id}
+                                    {selectedOrder.order_number && (
+                                      <div className="text-xs text-gray-500 mt-1">
+                                        Buyurtma raqami: #{selectedOrder.order_number}
                                       </div>
+                                    )}
+                                  </div>
                                   <div className="bg-gray-50 p-3 rounded-lg">
                                     <strong>Turi:</strong> {getOrderTypeDisplay(selectedOrder.order_type)}
                                   </div>
                                   <div className="bg-gray-50 p-3 rounded-lg">
                                     <strong>Holat:</strong> {selectedOrder.status}
-                                </div>
-                                    {selectedOrder.num_passengers && (
+                                  </div>
+                                  {selectedOrder.num_passengers && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                        <strong>Yo'lovchilar soni:</strong> {selectedOrder.num_passengers}
-                                      </div>
-                                    )}
-                                    {selectedOrder.item_description && (
+                                      <strong>Yo'lovchilar soni:</strong> {selectedOrder.num_passengers}
+                                    </div>
+                                  )}
+                                  {selectedOrder.item_description && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                       <strong>Mahsulot tavsifi:</strong> {selectedOrder.item_description}
-                                      </div>
-                                    )}
-                                    {selectedOrder.weight_tons && (
+                                    </div>
+                                  )}
+                                  {selectedOrder.weight_tons && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                       <strong>Yuk og'irligi:</strong> {selectedOrder.weight_tons} tonna
-                                      </div>
-                                    )}
-                                    {selectedOrder.payment_amount && (
+                                    </div>
+                                  )}
+                                  {selectedOrder.payment_amount && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                        <strong>To'lov miqdori:</strong> {selectedOrder.payment_amount}
-                                      </div>
-                                    )}
-                                    {selectedOrder.terms && (
+                                      <strong>To'lov miqdori:</strong> {selectedOrder.payment_amount}
+                                    </div>
+                                  )}
+                                  {selectedOrder.terms && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                        <strong>Shartlar:</strong> {selectedOrder.terms}
-                                      </div>
-                                    )}
-                                    {selectedOrder.comment && (
+                                      <strong>Shartlar:</strong> {selectedOrder.terms}
+                                    </div>
+                                  )}
+                                  {selectedOrder.comment && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                        <strong>Izoh:</strong> {selectedOrder.comment}
-                                      </div>
-                                    )}
+                                      <strong>Izoh:</strong> {selectedOrder.comment}
+                                    </div>
+                                  )}
                                   {selectedOrder.claimed_by && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                      <strong>Qabul qilgan haydovchi:</strong> {selectedOrder.claimed_by.user.full_name} (ID: {selectedOrder.claimed_by.id})
+                                      <strong>Qabul qilgan haydovchi:</strong> {selectedOrder.claimed_by.user.full_name}{" "}
+                                      (ID: {selectedOrder.claimed_by.id})
                                     </div>
                                   )}
                                   {selectedOrder.claimed_at && (
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                      <strong>Qabul qilingan vaqti:</strong> {new Date(selectedOrder.claimed_at).toLocaleString("uz-UZ")}
+                                      <strong>Qabul qilingan vaqti:</strong>{" "}
+                                      {new Date(selectedOrder.claimed_at).toLocaleString("uz-UZ")}
                                     </div>
                                   )}
                                 </div>
                               </div>
 
-                              {(selectedOrder.order_type === "plane" || selectedOrder.order_type === "train") && selectedOrder.passport_urls && selectedOrder.passport_urls.length > 0 && (
-                                <div>
-                                  <h4 className="font-semibold mb-2 flex items-center"><ImageIcon className="w-4 h-4 mr-2" /> Pasport rasmlari</h4>
-                                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                    {selectedOrder.passport_urls.map((url, index) => (
-                                      <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75">
-                                        <img src={url} alt={`Passport ${index + 1}`} className="object-cover object-center w-full h-full" />
-                                      </a>
-                                    ))}
+                              {(selectedOrder.order_type === "plane" || selectedOrder.order_type === "train") &&
+                                selectedOrder.passport_urls &&
+                                selectedOrder.passport_urls.length > 0 && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 flex items-center">
+                                      <ImageIcon className="w-4 h-4 mr-2" /> Pasport rasmlari
+                                    </h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                      {selectedOrder.passport_urls.map((url, index) => (
+                                        <a
+                                          key={index}
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75"
+                                        >
+                                          <img
+                                            src={url || "/placeholder.svg"}
+                                            alt={`Passport ${index + 1}`}
+                                            className="object-cover object-center w-full h-full"
+                                          />
+                                        </a>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
                             </div>
                           </TabsContent>
 
                           <TabsContent value="actions" className="space-y-4">
                             <div className="text-center space-y-4">
-                              <p className="text-gray-600">Buyurtma holatini o'zgartirish, haydovchi biriktirish yoki o'chirish.</p>
+                              <p className="text-gray-600">
+                                Buyurtma holatini o'zgartirish, haydovchi biriktirish yoki o'chirish.
+                              </p>
                               <div className="flex flex-wrap justify-center gap-2">
-                                <Button onClick={() => handleUpdateOrderStatus(selectedOrder.id, "accepted")} className="bg-blue-600 hover:bg-blue-700" disabled={selectedOrder.status === "accepted"}>
-                                    Qabul qilish
-                                  </Button>
-                                <Button onClick={() => handleUpdateOrderStatus(selectedOrder.id, "completed")} className="bg-green-600 hover:bg-green-700" disabled={selectedOrder.status === "completed"}>
-                                    Yakunlash
-                                  </Button>
-                                <Button onClick={() => handleUpdateOrderStatus(selectedOrder.id, "cancelled")} variant="outline" disabled={selectedOrder.status === "cancelled"}>
-                                    Bekor qilish
-                                  </Button>
-                                <Button onClick={() => handleUpdateOrderStatus(selectedOrder.id, "rejected")} variant="destructive" disabled={selectedOrder.status === "rejected"}>
-                                    Rad etish
-                                  </Button>
+                                <Button
+                                  onClick={() => handleUpdateOrderStatus(selectedOrder.id, "accepted")}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                  disabled={selectedOrder.status === "accepted"}
+                                >
+                                  Qabul qilish
+                                </Button>
+                                <Button
+                                  onClick={() => handleUpdateOrderStatus(selectedOrder.id, "completed")}
+                                  className="bg-green-600 hover:bg-green-700"
+                                  disabled={selectedOrder.status === "completed"}
+                                >
+                                  Yakunlash
+                                </Button>
+                                <Button
+                                  onClick={() => handleUpdateOrderStatus(selectedOrder.id, "cancelled")}
+                                  variant="outline"
+                                  disabled={selectedOrder.status === "cancelled"}
+                                >
+                                  Bekor qilish
+                                </Button>
+                                <Button
+                                  onClick={() => handleUpdateOrderStatus(selectedOrder.id, "rejected")}
+                                  variant="destructive"
+                                  disabled={selectedOrder.status === "rejected"}
+                                >
+                                  Rad etish
+                                </Button>
                                 <Button
                                   variant="outline"
                                   onClick={() => {
@@ -617,34 +874,40 @@ export default function OrdersPage() {
                                 </Button>
                               </div>
 
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
                                   <Button variant="destructive">
-                                      <Trash2 className="w-4 h-4 mr-2" />
+                                    <Trash2 className="w-4 h-4 mr-2" />
                                     O'chirish
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Buyurtmani o'chirish</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                      Haqiqatan ham <strong>#{selectedOrder.order_number || selectedOrder.id}</strong> buyurtmani o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => {
-                                          handleDeleteOrder(selectedOrder.id)
-                                          setIsDialogOpen(false)
-                                        }}
-                                        className="bg-red-600 hover:bg-red-700"
-                                      >
-                                        O'chirish
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Buyurtmani o'chirish</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Haqiqatan ham <strong>#{selectedOrder.id}</strong> buyurtmani o'chirmoqchimisiz?
+                                      Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                                      {selectedOrder.order_number && (
+                                        <span className="block text-sm text-gray-500 mt-1">
+                                          Buyurtma raqami: #{selectedOrder.order_number}
+                                        </span>
+                                      )}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => {
+                                        handleDeleteOrder(selectedOrder.id)
+                                        setIsDialogOpen(false)
+                                      }}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      O'chirish
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </TabsContent>
                         </Tabs>
@@ -655,19 +918,32 @@ export default function OrdersPage() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm" disabled={deletingOrderId === order.id}>
-                        {deletingOrderId === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        {deletingOrderId === order.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Buyurtmani o'chirish</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Haqiqatan ham <strong>#{order.order_number || order.id}</strong> buyurtmani o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                          Haqiqatan ham <strong>#{order.id}</strong> buyurtmani o'chirmoqchimisiz? Bu amalni bekor qilib
+                          bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                          {order.order_number && (
+                            <span className="block text-sm text-gray-500 mt-1">
+                              Buyurtma raqami: #{order.order_number}
+                            </span>
+                          )}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteOrder(order.id)} className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
                           O'chirish
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -684,10 +960,16 @@ export default function OrdersPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  {totalOrders} tadan {(currentPage - 1) * 20 + 1}-{Math.min(currentPage * 20, totalOrders)} ko'rsatilmoqda
+                  {filteredOrders.length} tadan {(currentPage - 1) * itemsPerPage + 1}-
+                  {Math.min(currentPage * itemsPerPage, filteredOrders.length)} ko'rsatilmoqda
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1 || isLoading}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
                     Oldingi
                   </Button>
                   <span className="text-sm text-gray-600">
@@ -697,7 +979,7 @@ export default function OrdersPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages || isLoading}
+                    disabled={currentPage === totalPages}
                   >
                     Keyingi
                   </Button>
@@ -711,7 +993,9 @@ export default function OrdersPage() {
           <div className="text-center py-12">
             <Package className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">Buyurtmalar topilmadi</h3>
-            <p className="mt-1 text-sm text-gray-500">Qidiruv shartlaringizni o'zgartiring</p>
+            <p className="mt-1 text-sm text-gray-500">
+              {hasActiveFilters ? "Qidiruv shartlaringizni o'zgartiring" : "Hozircha buyurtmalar yo'q"}
+            </p>
           </div>
         )}
       </main>
