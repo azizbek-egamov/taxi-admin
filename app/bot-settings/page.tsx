@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Settings, MessageSquare, Users, DollarSign, Globe, CreditCard, ReceiptText, Shield } from "lucide-react"
+import { Settings, MessageSquare, Users, Globe, CreditCard, Shield } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import GroupIdSettingsTab from "@/components/bot-settings/group-id-settings-tab"
 import AdminSettingsTab from "@/components/bot-settings/admin-settings-tab"
-import PointPricesTab from "@/components/bot-settings/point-prices-tab"
 import CountriesTab from "@/components/bot-settings/countries-tab"
 import CardsTab from "@/components/bot-settings/cards-tab"
 import PointPurchaseRequestsTab from "@/components/bot-settings/point-purchase-requests-tab"
@@ -38,34 +37,34 @@ export default function BotSettingsPage() {
         <Tabs defaultValue="group-ids" className="w-full" onValueChange={setActiveTab}>
           <div className="overflow-x-auto">
             <TabsList className="flex flex-nowrap w-full gap-4 h-auto">
-            <TabsTrigger value="group-ids" className="flex items-center gap-3">
-              <MessageSquare className="h-4 w-4" />
-              Guruh ID lari
-            </TabsTrigger>
-            <TabsTrigger value="admins" className="flex items-center gap-3">
-              <Users className="h-4 w-4" />
-              Adminlar
-            </TabsTrigger>
-            <TabsTrigger value="point-prices" className="flex items-center gap-3">
-              <DollarSign className="h-4 w-4" />
-              Ball Narxlari
-            </TabsTrigger>
-            <TabsTrigger value="countries" className="flex items-center gap-3">
-              <Globe className="h-4 w-4" />
-              Davlat/Viloyat/Shahar
-            </TabsTrigger>
-            <TabsTrigger value="cards" className="flex items-center gap-3">
-              <CreditCard className="h-4 w-4" />
-              To'lov Kartalari
-            </TabsTrigger>
-            {/* <TabsTrigger value="point-purchase-requests" className="flex items-center gap-3">
-              <ReceiptText className="h-4 w-4" />
-              Ball So'rovlari
-            </TabsTrigger> */}
-            <TabsTrigger value="deport-check-requests" className="flex items-center gap-3">
-              <Shield className="h-4 w-4" />
-              Deportatsiya Tekshiruvi
-            </TabsTrigger>
+              <TabsTrigger value="group-ids" className="flex items-center gap-3">
+                <MessageSquare className="h-4 w-4" />
+                Guruh ID lari
+              </TabsTrigger>
+              <TabsTrigger value="admins" className="flex items-center gap-3">
+                <Users className="h-4 w-4" />
+                Adminlar
+              </TabsTrigger>
+              {/* <TabsTrigger value="point-prices" className="flex items-center gap-3">
+                <DollarSign className="h-4 w-4" />
+                Ball Narxlari
+              </TabsTrigger> */}
+              <TabsTrigger value="countries" className="flex items-center gap-3">
+                <Globe className="h-4 w-4" />
+                Davlat/Viloyat/Shahar
+              </TabsTrigger>
+              <TabsTrigger value="cards" className="flex items-center gap-3">
+                <CreditCard className="h-4 w-4" />
+                To'lov Kartalari
+              </TabsTrigger>
+              {/* <TabsTrigger value="point-purchase-requests" className="flex items-center gap-3">
+                <ReceiptText className="h-4 w-4" />
+                Ball So'rovlari
+              </TabsTrigger> */}
+              <TabsTrigger value="deport-check-requests" className="flex items-center gap-3">
+                <Shield className="h-4 w-4" />
+                Deportatsiya Tekshiruvi
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -76,9 +75,9 @@ export default function BotSettingsPage() {
             <TabsContent value="admins">
               <AdminSettingsTab />
             </TabsContent>
-            <TabsContent value="point-prices">
+            {/* <TabsContent value="point-prices">
               <PointPricesTab />
-            </TabsContent>
+            </TabsContent> */}
             <TabsContent value="countries">
               <CountriesTab />
             </TabsContent>
