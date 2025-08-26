@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,7 +29,20 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Car, CheckCircle, XCircle, Clock, Search, Star, Phone, Eye, Trash2, Loader2, RefreshCw, Download, UserPlus } from "lucide-react"
+import {
+  Car,
+  CheckCircle,
+  Clock,
+  Search,
+  Star,
+  Phone,
+  Eye,
+  Trash2,
+  Loader2,
+  RefreshCw,
+  Download,
+  UserPlus,
+} from "lucide-react"
 import { apiClient, type Driver, type User, type CreateDriverPayload } from "@/lib/api"
 
 const PAGE_SIZE = 10
@@ -53,7 +68,8 @@ export default function DriversPage() {
   const [searchedUsers, setSearchedUsers] = useState<User[]>([])
   const [isSearchingUsers, setIsSearchingUsers] = useState(false)
   const [selectedUserForDriver, setSelectedUserForDriver] = useState<User | null>(null)
-  const [newDriverData, setNewDriverData] = useState<Omit<CreateDriverPayload, "user_id"> & { user_id?: number }>({ // user_id is optional here because it's set in step 1
+  const [newDriverData, setNewDriverData] = useState<Omit<CreateDriverPayload, "user_id"> & { user_id?: number }>({
+    // user_id is optional here because it's set in step 1
     direction: "taxi",
     passport_photo: null as any,
     driver_license_photo: null as any,
@@ -75,7 +91,14 @@ export default function DriversPage() {
       if (directionFilter !== "all") filters.direction = directionFilter
       if (searchTerm.trim()) filters.search = searchTerm.trim()
 
+      console.log("[v0] Fetching drivers with filters:", filters)
       const response = await apiClient.getDrivers(currentPage, filters)
+      console.log("[v0] Drivers API response:", {
+        count: response.count,
+        resultsLength: response.results.length,
+        searchTerm: searchTerm.trim(),
+      })
+
       setDrivers(response.results)
       setTotalDrivers(response.count)
       setTotalPages(Math.max(1, Math.ceil(response.count / PAGE_SIZE)))
@@ -92,18 +115,29 @@ export default function DriversPage() {
       return
     }
     setIsSearchingUsers(true)
+    setCreateDriverError(null) // Clear any previous errors
     try {
-      const response = await apiClient.getUsers(1, { query: searchUserQuery.trim() })
+      console.log("[v0] Starting user search with query:", searchUserQuery.trim())
+      const response = await apiClient.searchUsers(searchUserQuery.trim(), 1)
+      console.log("[v0] Search response:", response)
       setSearchedUsers(response.results)
-    } catch (error) {
-      console.error("Error searching users:", error)
+
+      if (response.results.length === 0) {
+        console.log("[v0] No users found for query:", searchUserQuery.trim())
+      }
+    } catch (error: any) {
+      console.error("[v0] Error searching users:", error)
       setSearchedUsers([])
+      setCreateDriverError(`Qidirishda xatolik: ${error.message}`)
     } finally {
       setIsSearchingUsers(false)
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof Omit<CreateDriverPayload, "user_id" | "direction">) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: keyof Omit<CreateDriverPayload, "user_id" | "direction">,
+  ) => {
     if (e.target.files && e.target.files.length > 0 && e.target.files[0]) {
       setNewDriverData((prev) => ({ ...prev, [field]: e.target.files[0] }))
     }
@@ -191,12 +225,26 @@ export default function DriversPage() {
   const displayedDrivers = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
     if (!term) return drivers
-    return drivers.filter((d) => {
+
+    console.log("[v0] Applying client-side filter with term:", term)
+    const filtered = drivers.filter((d) => {
       const name = d.user.full_name?.toLowerCase() || ""
       const phone = d.user.phone_number?.toLowerCase() || ""
-      const idMatch = String(d.id).includes(term)
-      return name.includes(term) || phone.includes(term) || idMatch
+      const telegramId = String(d.user.telegram_id).toLowerCase()
+      const driverId = String(d.id).toLowerCase()
+
+      const matches =
+        name.includes(term) || phone.includes(term) || telegramId.includes(term) || driverId.includes(term)
+
+      return matches
     })
+
+    console.log("[v0] Client-side filtering result:", {
+      originalCount: drivers.length,
+      filteredCount: filtered.length,
+      searchTerm: term,
+    })
+    return filtered
   }, [drivers, searchTerm])
 
   const getStatusBadge = (isApproved: boolean) => {
@@ -263,7 +311,7 @@ export default function DriversPage() {
                 <p className="text-sm text-gray-500">Jami {totalDrivers.toLocaleString()} ta haydovchi</p>
               </div>
             </div>
-                        <div className="flex flex-col [@media(max-width:920px)]:flex-col [@media(min-width:921px)]:flex-row items-stretch [@media(max-width:920px)]:items-stretch [@media(min-width:921px)]:items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col [@media(max-width:920px)]:flex-col [@media(min-width:921px)]:flex-row items-stretch [@media(max-width:920px)]:items-stretch [@media(min-width:921px)]:items-center gap-2 w-full md:w-auto">
               <Dialog open={isCreateDriverDialogOpen} onOpenChange={setIsCreateDriverDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
@@ -296,7 +344,11 @@ export default function DriversPage() {
                             onKeyPress={(e) => e.key === "Enter" && handleSearchUsers()}
                           />
                           <Button onClick={handleSearchUsers} disabled={isSearchingUsers}>
-                            {isSearchingUsers ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                            {isSearchingUsers ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Search className="w-4 h-4" />
+                            )}
                             Qidirish
                           </Button>
                         </div>
@@ -324,9 +376,22 @@ export default function DriversPage() {
                         </div>
                       )}
 
-                      {searchedUsers.length === 0 && searchUserQuery.length > 0 && !isSearchingUsers && (
-                        <p className="text-center text-sm text-gray-500">Foydalanuvchilar topilmadi.</p>
+                      {/* {searchedUsers.length === 0 && searchUserQuery.length > 0 && !isSearchingUsers && (
+                        <div className="text-center p-4 bg-yellow-50 rounded-md">
+                          <p className="text-sm text-yellow-700">
+                            "{searchUserQuery}" bo'yicha foydalanuvchilar topilmadi.
+                          </p>
+                          <p className="text-xs text-yellow-600 mt-1">
+                            Telegram ID, to'liq ism yoki telefon raqamini tekshiring.
+                          </p>
+                        </div>
                       )}
+
+                      {createDriverError && createDriverStep === 1 && (
+                        <div className="text-center p-4 bg-red-50 rounded-md">
+                          <p className="text-sm text-red-700">{createDriverError}</p>
+                        </div>
+                      )} */}
 
                       <Button
                         onClick={() => setCreateDriverStep(2)}
@@ -340,7 +405,10 @@ export default function DriversPage() {
 
                   {createDriverStep === 2 && (
                     <form onSubmit={handleCreateDriver} className="space-y-4">
-                      <h4 className="font-semibold text-lg">Tanlangan foydalanuvchi: {selectedUserForDriver?.full_name || selectedUserForDriver?.telegram_id}</h4>
+                      <h4 className="font-semibold text-lg">
+                        Tanlangan foydalanuvchi:{" "}
+                        {selectedUserForDriver?.full_name || selectedUserForDriver?.telegram_id}
+                      </h4>
                       <div>
                         <label htmlFor="direction" className="block text-sm font-medium text-gray-700">
                           Yo'nalish
@@ -361,33 +429,63 @@ export default function DriversPage() {
                         <label htmlFor="passport_photo" className="block text-sm font-medium text-gray-700">
                           Pasport rasmi <span className="text-red-500">*</span>
                         </label>
-                        <Input id="passport_photo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, "passport_photo")} required className="mt-1" />
+                        <Input
+                          id="passport_photo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "passport_photo")}
+                          required
+                          className="mt-1"
+                        />
                       </div>
                       <div>
                         <label htmlFor="driver_license_photo" className="block text-sm font-medium text-gray-700">
                           Haydovchilik guvohnomasi <span className="text-red-500">*</span>
                         </label>
-                        <Input id="driver_license_photo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, "driver_license_photo")} required className="mt-1" />
+                        <Input
+                          id="driver_license_photo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "driver_license_photo")}
+                          required
+                          className="mt-1"
+                        />
                       </div>
                       <div>
                         <label htmlFor="sts_photo" className="block text-sm font-medium text-gray-700">
                           STS (Avtomobil texnik pasporti) <span className="text-red-500">*</span>
                         </label>
-                        <Input id="sts_photo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, "sts_photo")} required className="mt-1" />
+                        <Input
+                          id="sts_photo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "sts_photo")}
+                          required
+                          className="mt-1"
+                        />
                       </div>
                       <div>
                         <label htmlFor="car_photo" className="block text-sm font-medium text-gray-700">
                           Mashina rasmi <span className="text-red-500">*</span>
                         </label>
-                        <Input id="car_photo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, "car_photo")} required className="mt-1" />
+                        <Input
+                          id="car_photo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "car_photo")}
+                          required
+                          className="mt-1"
+                        />
                       </div>
                       <Button type="submit" className="w-full" disabled={isCreatingDriver}>
-                        {isCreatingDriver ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
+                        {isCreatingDriver ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="w-4 h-4 mr-2" />
+                        )}
                         Haydovchi yaratish
                       </Button>
-                      {createDriverError && (
-                        <p className="text-red-500 text-sm mt-2">{createDriverError}</p>
-                      )}
+                      {createDriverError && <p className="text-red-500 text-sm mt-2">{createDriverError}</p>}
                       <Button variant="outline" onClick={() => setCreateDriverStep(1)} className="w-full mt-2">
                         Ortga
                       </Button>
@@ -399,7 +497,12 @@ export default function DriversPage() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                 Yangilash
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportDrivers} disabled={displayedDrivers.length === 0}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportDrivers}
+                disabled={displayedDrivers.length === 0}
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Eksport
               </Button>
@@ -447,10 +550,24 @@ export default function DriversPage() {
           </CardContent>
         </Card>
 
+        {searchTerm.trim() && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700">
+              "{searchTerm}" bo'yicha qidiruv natijasi: {displayedDrivers.length} ta haydovchi topildi
+              {displayedDrivers.length !== totalDrivers && (
+                <span className="text-blue-600"> (jami {totalDrivers} tadan)</span>
+              )}
+            </p>
+          </div>
+        )}
+
         {/* Drivers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedDrivers.map((driver) => (
-            <Card key={driver.id} className="bg-white/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover-lift">
+            <Card
+              key={driver.id}
+              className="bg-white/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover-lift"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -494,7 +611,12 @@ export default function DriversPage() {
                     }}
                   >
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={() => setSelectedDriver(driver)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 bg-transparent"
+                        onClick={() => setSelectedDriver(driver)}
+                      >
                         <Eye className="w-4 h-4 mr-2" />
                         Ko'rish
                       </Button>
@@ -502,7 +624,9 @@ export default function DriversPage() {
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Haydovchi ma'lumotlari</DialogTitle>
-                        <DialogDescription>{selectedDriver?.user.full_name || "Noma'lum"} ning to'liq ma'lumotlari</DialogDescription>
+                        <DialogDescription>
+                          {selectedDriver?.user.full_name || "Noma'lum"} ning to'liq ma'lumotlari
+                        </DialogDescription>
                       </DialogHeader>
 
                       {selectedDriver && (
@@ -529,22 +653,26 @@ export default function DriversPage() {
                                   </div>
                                   <div>
                                     <strong>Yo'nalish:</strong> {selectedDriver.direction_display}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold mb-2">Statistika</h4>
-                              <div className="grid grid-cols-3 gap-4 text-center">
-                                <div className="bg-blue-50 p-3 rounded-lg">
-                                  <div className="text-2xl font-bold text-blue-600">{selectedDriver.points}</div>
-                                  <div className="text-sm text-blue-700">Ballar</div>
-                                </div>
-                                <div className="bg-yellow-50 p-3 rounded-lg">
-                                    <div className="text-2xl font-bold text-yellow-600">{selectedDriver.rating.toFixed(1)}</div>
-                                  <div className="text-sm text-yellow-700">Reyting</div>
-                                </div>
-                                <div className="bg-green-50 p-3 rounded-lg">
-                                    <div className="text-2xl font-bold text-green-600">{selectedDriver.is_approved ? "✓" : "⏳"}</div>
+                              <div>
+                                <h4 className="font-semibold mb-2">Statistika</h4>
+                                <div className="grid grid-cols-3 gap-4 text-center">
+                                  <div className="bg-blue-50 p-3 rounded-lg">
+                                    <div className="text-2xl font-bold text-blue-600">{selectedDriver.points}</div>
+                                    <div className="text-sm text-blue-700">Ballar</div>
+                                  </div>
+                                  <div className="bg-yellow-50 p-3 rounded-lg">
+                                    <div className="text-2xl font-bold text-yellow-600">
+                                      {selectedDriver.rating.toFixed(1)}
+                                    </div>
+                                    <div className="text-sm text-yellow-700">Reyting</div>
+                                  </div>
+                                  <div className="bg-green-50 p-3 rounded-lg">
+                                    <div className="text-2xl font-bold text-green-600">
+                                      {selectedDriver.is_approved ? "✓" : "⏳"}
+                                    </div>
                                     <div className="text-sm text-green-700">Holat</div>
                                   </div>
                                 </div>
@@ -557,25 +685,41 @@ export default function DriversPage() {
                               {selectedDriver.passport_photo_url && (
                                 <div>
                                   <h4 className="font-semibold mb-2">Pasport rasmi</h4>
-                                  <img src={selectedDriver.passport_photo_url || "/placeholder.svg"} alt="Pasport" className="w-full h-48 object-cover rounded-lg border" />
+                                  <img
+                                    src={selectedDriver.passport_photo_url || "/placeholder.svg"}
+                                    alt="Pasport"
+                                    className="w-full h-48 object-cover rounded-lg border"
+                                  />
                                 </div>
                               )}
                               {selectedDriver.driver_license_photo_url && (
                                 <div>
                                   <h4 className="font-semibold mb-2">Haydovchilik guvohnomasi</h4>
-                                  <img src={selectedDriver.driver_license_photo_url || "/placeholder.svg"} alt="Guvohnoma" className="w-full h-48 object-cover rounded-lg border" />
+                                  <img
+                                    src={selectedDriver.driver_license_photo_url || "/placeholder.svg"}
+                                    alt="Guvohnoma"
+                                    className="w-full h-48 object-cover rounded-lg border"
+                                  />
                                 </div>
                               )}
                               {selectedDriver.sts_photo_url && (
                                 <div>
                                   <h4 className="font-semibold mb-2">STS (Avto hujjat)</h4>
-                                  <img src={selectedDriver.sts_photo_url || "/placeholder.svg"} alt="STS" className="w-full h-48 object-cover rounded-lg border" />
+                                  <img
+                                    src={selectedDriver.sts_photo_url || "/placeholder.svg"}
+                                    alt="STS"
+                                    className="w-full h-48 object-cover rounded-lg border"
+                                  />
                                 </div>
                               )}
                               {selectedDriver.car_photo_url && (
                                 <div>
                                   <h4 className="font-semibold mb-2">Mashina rasmi</h4>
-                                  <img src={selectedDriver.car_photo_url || "/placeholder.svg"} alt="Mashina" className="w-full h-48 object-cover rounded-lg border" />
+                                  <img
+                                    src={selectedDriver.car_photo_url || "/placeholder.svg"}
+                                    alt="Mashina"
+                                    className="w-full h-48 object-cover rounded-lg border"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -586,11 +730,17 @@ export default function DriversPage() {
                               <p className="text-gray-600">Haydovchini tasdiqlash, rad etish yoki o'chirish.</p>
                               <div className="flex justify-center space-x-4">
                                 {!selectedDriver.is_approved ? (
-                                  <Button onClick={() => handleApproveDriver(selectedDriver.id, true)} className="bg-green-600 hover:bg-green-700">
+                                  <Button
+                                    onClick={() => handleApproveDriver(selectedDriver.id, true)}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
                                     Tasdiqlash
                                   </Button>
                                 ) : (
-                                  <Button onClick={() => handleApproveDriver(selectedDriver.id, false)} variant="outline">
+                                  <Button
+                                    onClick={() => handleApproveDriver(selectedDriver.id, false)}
+                                    variant="outline"
+                                  >
                                     Rad etish
                                   </Button>
                                 )}
@@ -606,7 +756,9 @@ export default function DriversPage() {
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Haydovchini o'chirish</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Haqiqatan ham <strong>{selectedDriver.user.full_name}</strong>ni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                                        Haqiqatan ham <strong>{selectedDriver.user.full_name}</strong>ni
+                                        o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar
+                                        yo'qoladi.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -634,19 +786,27 @@ export default function DriversPage() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm" disabled={deletingDriverId === driver.id}>
-                        {deletingDriverId === driver.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        {deletingDriverId === driver.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Haydovchini o'chirish</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Haqiqatan ham <strong>{driver.user.full_name || "bu haydovchi"}</strong>ni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                          Haqiqatan ham <strong>{driver.user.full_name || "bu haydovchi"}</strong>ni o'chirmoqchimisiz?
+                          Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteDriver(driver.id)} className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction
+                          onClick={() => handleDeleteDriver(driver.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
                           O'chirish
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -663,16 +823,27 @@ export default function DriversPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  {totalDrivers} tadan {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, totalDrivers)} ko'rsatilmoqda
+                  {totalDrivers} tadan {(currentPage - 1) * PAGE_SIZE + 1}-
+                  {Math.min(currentPage * PAGE_SIZE, totalDrivers)} ko'rsatilmoqda
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1 || isLoading}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1 || isLoading}
+                  >
                     Oldingi
                   </Button>
                   <span className="text-sm text-gray-600">
                     {currentPage} / {totalPages}
                   </span>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages || isLoading}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages || isLoading}
+                  >
                     Keyingi
                   </Button>
                 </div>
@@ -684,8 +855,19 @@ export default function DriversPage() {
         {displayedDrivers.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Car className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Haydovchilar topilmadi</h3>
-            <p className="mt-1 text-sm text-gray-500">Qidiruv shartlaringizni o'zgartiring</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {searchTerm.trim() ? "Qidiruv bo'yicha haydovchilar topilmadi" : "Haydovchilar topilmadi"}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm.trim()
+                ? `"${searchTerm}" bo'yicha natija yo'q. Boshqa kalit so'zlar bilan qidiring.`
+                : "Qidiruv shartlaringizni o'zgartiring"}
+            </p>
+            {searchTerm.trim() && (
+              <Button variant="outline" size="sm" className="mt-3 bg-transparent" onClick={() => setSearchTerm("")}>
+                Qidiruvni tozalash
+              </Button>
+            )}
           </div>
         )}
       </main>
