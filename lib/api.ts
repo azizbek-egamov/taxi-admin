@@ -327,7 +327,7 @@ class ApiClient {
     localStorage.removeItem("refresh_token")
     // Redirect to login page or show a message
     if (typeof window !== "undefined") {
-    window.location.href = "/login"
+      window.location.href = "/login"
     }
   }
 
@@ -341,11 +341,22 @@ class ApiClient {
   }
 
   // Users
-  async getUsers(page = 1, filters?: { query?: string }): Promise<PaginatedResponse<User>> {
+  async getUsers(page = 1, filters?: { query?: string; telegram_id?: number }): Promise<PaginatedResponse<User>> {
     const query = new URLSearchParams()
     query.append("page", page.toString())
     if (filters?.query) query.append("query", filters.query)
+    if (filters?.telegram_id) query.append("telegram_id", filters.telegram_id.toString())
     return this.request("GET", `/users/?${query.toString()}`)
+  }
+
+  async searchUsers(searchQuery: string, page = 1): Promise<PaginatedResponse<User>> {
+    const query = new URLSearchParams()
+    query.append("page", page.toString())
+
+    query.append("query", searchQuery.trim())
+
+    console.log("[v0] Searching users with query:", `/users/search/?${query.toString()}`)
+    return this.request("GET", `/users/search/?${query.toString()}`)
   }
 
   async createUser(data: CreateUserPayload): Promise<User> {
@@ -358,11 +369,6 @@ class ApiClient {
 
   async deleteUser(id: number): Promise<void> {
     return this.request("DELETE", `/users/${id}/`)
-  }
-
-  async searchUsers(query: string, page = 1): Promise<PaginatedResponse<User>> {
-    // The main getUsers can handle search by passing a query filter
-    return this.getUsers(page, { query })
   }
 
   // Drivers
