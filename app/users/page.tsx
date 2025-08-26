@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,15 +43,16 @@ import {
   UserPlus,
 } from "lucide-react"
 import { apiClient, type User, type CreateUserPayload } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
+  const [allUsers, setAllUsers] = useState<User[]>([]) // Store all users for frontend pagination
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("") // Applied search term after button click
   const [languageFilter, setLanguageFilter] = useState<string>("all")
+  const [appliedLanguageFilter, setAppliedLanguageFilter] = useState<string>("all") // Applied language filter after button click
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalUsers, setTotalUsers] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -63,28 +66,30 @@ export default function UsersPage() {
   })
   const [isCreatingUser, setIsCreatingUser] = useState(false)
   const [createUserError, setCreateUserError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  const ITEMS_PER_PAGE = 12 // Frontend pagination with 12 items per page
 
   useEffect(() => {
-    fetchUsers()
-  }, [currentPage, languageFilter, searchTerm])
+    fetchAllUsers()
+  }, [])
 
-  const fetchUsers = async () => {
+  const fetchAllUsers = async () => {
     try {
       setIsLoading(true)
-      const filters: { query?: string; language?: string } = {}
+      let allUsersData: User[] = []
+      let page = 1
+      let hasMore = true
 
-      if (languageFilter !== "all") {
-        filters.language = languageFilter
+      // Fetch all pages to get all users
+      while (hasMore) {
+        const response = await apiClient.getUsers(page)
+        allUsersData = [...allUsersData, ...response.results]
+        hasMore = response.next !== null
+        page++
       }
 
-      if (searchTerm.trim()) {
-        filters.query = searchTerm.trim()
-      }
-
-      const response = await apiClient.getUsers(currentPage, filters)
-      setUsers(response.results)
-      setTotalPages(Math.ceil(response.count / 20)) // Assuming 20 items per page
-      setTotalUsers(response.count)
+      setAllUsers(allUsersData)
     } catch (error) {
       console.error("Error fetching users:", error)
     } finally {
@@ -93,13 +98,14 @@ export default function UsersPage() {
   }
 
   const handleSearch = async () => {
-    setCurrentPage(1)
-    // fetchUsers will be triggered by useEffect due to searchTerm change
+    setAppliedSearchTerm(searchTerm.trim())
+    setAppliedLanguageFilter(languageFilter)
+    setCurrentPage(1) // Reset to first page when searching
   }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchUsers()
+    await fetchAllUsers()
     setIsRefreshing(false)
   }
 
@@ -109,10 +115,9 @@ export default function UsersPage() {
     setCreateUserError(null)
     try {
       const createdUser = await apiClient.createUser(newUserData)
-      setUsers([createdUser, ...users]) // Add new user to the list
-      setTotalUsers(totalUsers + 1)
-      setIsCreateUserDialogOpen(false) // Close the dialog
-      setNewUserData({ telegram_id: 0, full_name: "", phone_number: "", language: "uz" }) // Reset form
+      setAllUsers([createdUser, ...allUsers]) // Add to allUsers instead of users
+      setIsCreateUserDialogOpen(false)
+      setNewUserData({ telegram_id: 0, full_name: "", phone_number: "", language: "uz" })
     } catch (error: any) {
       console.error("Error creating user:", error)
       setCreateUserError(error.message || "Foydalanuvchi yaratishda xatolik yuz berdi.")
@@ -125,16 +130,53 @@ export default function UsersPage() {
     try {
       setDeletingUserId(userId)
       await apiClient.deleteUser(userId)
-      setUsers(users.filter((user) => user.id !== userId))
-      setTotalUsers(totalUsers - 1)
+      setAllUsers(allUsers.filter((user) => user.id !== userId)) // Remove from allUsers
+      toast({
+        title: "Muvaffaqiyat!",
+        description: "Foydalanuvchi muvaffaqiyatli o'chirildi.",
+        variant: "default",
+      })
     } catch (error) {
       console.error("Error deleting user:", error)
+      toast({
+        title: "Xatolik!",
+        description: "Foydalanuvchini o'chirishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        variant: "destructive",
+      })
     } finally {
       setDeletingUserId(null)
     }
   }
 
-  const displayedUsers = searchTerm.trim() ? users : users
+  const filteredUsers = useMemo(() => {
+    let filtered = allUsers
+
+    // Apply search filter
+    if (appliedSearchTerm) {
+      filtered = filtered.filter((user) => {
+        const searchLower = appliedSearchTerm.toLowerCase()
+        return (
+          user.full_name?.toLowerCase().includes(searchLower) ||
+          user.phone_number?.includes(appliedSearchTerm) ||
+          user.telegram_id.toString().includes(appliedSearchTerm)
+        )
+      })
+    }
+
+    // Apply language filter
+    if (appliedLanguageFilter !== "all") {
+      filtered = filtered.filter((user) => user.language === appliedLanguageFilter)
+    }
+
+    return filtered
+  }, [allUsers, appliedSearchTerm, appliedLanguageFilter])
+
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
+  const displayedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return filteredUsers.slice(startIndex, endIndex)
+  }, [filteredUsers, currentPage])
 
   const getLanguageDisplay = (language: string | null) => {
     switch (language) {
@@ -158,7 +200,8 @@ export default function UsersPage() {
   const handleExportUsers = () => {
     const csvContent = [
       ["ID", "Ism", "Telefon", "Telegram ID", "Til", "Ro'yxatdan o'tgan"],
-      ...users.map((user) => [
+      ...filteredUsers.map((user) => [
+        // Export filtered users instead of displayed users
         user.id.toString(),
         user.full_name || "Noma'lum",
         user.phone_number || "Yo'q",
@@ -179,7 +222,7 @@ export default function UsersPage() {
     window.URL.revokeObjectURL(url)
   }
 
-  if (isLoading && currentPage === 1) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -199,7 +242,8 @@ export default function UsersPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Foydalanuvchilar</h1>
-                <p className="text-sm text-gray-500">Jami {totalUsers.toLocaleString()} ta foydalanuvchi</p>
+                <p className="text-sm text-gray-500">Jami {allUsers.length.toLocaleString()} ta foydalanuvchi</p>{" "}
+                {/* Show total users count */}
               </div>
             </div>
             <div className="flex flex-col [@media(max-width:920px)]:flex-col [@media(min-width:921px)]:flex-row items-stretch [@media(max-width:920px)]:items-stretch [@media(min-width:921px)]:items-center gap-2 w-full md:w-auto">
@@ -227,7 +271,7 @@ export default function UsersPage() {
                         type="number"
                         value={newUserData.telegram_id || ""}
                         onChange={(e) =>
-                          setNewUserData({ ...newUserData, telegram_id: parseInt(e.target.value) || 0 })
+                          setNewUserData({ ...newUserData, telegram_id: Number.parseInt(e.target.value) || 0 })
                         }
                         required
                         className="mt-1"
@@ -277,20 +321,36 @@ export default function UsersPage() {
                       </Select>
                     </div>
                     <Button type="submit" className="w-full" disabled={isCreatingUser}>
-                      {isCreatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
+                      {isCreatingUser ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UserPlus className="w-4 h-4 mr-2" />
+                      )}
                       Foydalanuvchi qo'shish
                     </Button>
-                    {createUserError && (
-                      <p className="text-red-500 text-sm mt-2">{createUserError}</p>
-                    )}
+                    {createUserError && <p className="text-red-500 text-sm mt-2">{createUserError}</p>}
                   </form>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing} className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="w-full sm:w-auto bg-transparent"
+              >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                 Yangilash
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportUsers} disabled={users.length === 0} className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportUsers}
+                disabled={filteredUsers.length === 0}
+                className="w-full sm:w-auto bg-transparent"
+              >
+                {" "}
+                {/* Disable based on filtered users */}
                 <Download className="w-4 h-4 mr-2" />
                 Eksport
               </Button>
@@ -304,15 +364,15 @@ export default function UsersPage() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Ism, telefon yoki Telegram ID bo'yicha qidirish..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Ism, telefon yoki Telegram ID bo'yicha qidirish..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10"
-              />
+                    className="pl-10"
+                  />
                 </div>
               </div>
               <Select value={languageFilter} onValueChange={setLanguageFilter}>
@@ -343,7 +403,8 @@ export default function UsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Jami foydalanuvchilar</p>
-                  <p className="text-2xl font-bold text-blue-600">{totalUsers.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-blue-600">{allUsers.length.toLocaleString()}</p>{" "}
+                  {/* Show total users */}
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -353,8 +414,8 @@ export default function UsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Joriy sahifa</p>
-                  <p className="text-2xl font-bold text-green-600">{currentPage}</p>
+                  <p className="text-sm text-gray-600">Filtrlangan</p> {/* Show filtered count */}
+                  <p className="text-2xl font-bold text-green-600">{filteredUsers.length.toLocaleString()}</p>
                 </div>
                 <Filter className="h-8 w-8 text-green-600" />
               </div>
@@ -376,7 +437,7 @@ export default function UsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Sahifadagi</p>
-                  <p className="text-2xl font-bold text-orange-600">{users.length}</p>
+                  <p className="text-2xl font-bold text-orange-600">{displayedUsers.length}</p>
                 </div>
                 <UserPlus className="h-8 w-8 text-orange-600" />
               </div>
@@ -551,15 +612,15 @@ export default function UsersPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  {totalUsers} tadan {(currentPage - 1) * 20 + 1}-{Math.min(currentPage * 20, totalUsers)}{" "}
-                  ko'rsatilmoqda
+                  {filteredUsers.length} tadan {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} ko'rsatilmoqda
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1 || isLoading}
+                    disabled={currentPage === 1}
                   >
                     Oldingi
                   </Button>
@@ -570,7 +631,7 @@ export default function UsersPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages || isLoading}
+                    disabled={currentPage === totalPages}
                   >
                     Keyingi
                   </Button>
