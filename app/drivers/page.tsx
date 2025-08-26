@@ -44,22 +44,23 @@ import {
   UserPlus,
 } from "lucide-react"
 import { apiClient, type Driver, type User, type CreateDriverPayload } from "@/lib/api"
+import { toast } from "@/hooks/use-toast"
 
-const PAGE_SIZE = 10
+const ITEMS_PER_PAGE = 12
 
 export default function DriversPage() {
-  const [drivers, setDrivers] = useState<Driver[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [directionFilter, setDirectionFilter] = useState<string>("all")
+  const [allDrivers, setAllDrivers] = useState<Driver[]>([])
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("")
+  const [appliedStatusFilter, setAppliedStatusFilter] = useState<string>("all")
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [deletingDriverId, setDeletingDriverId] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalDrivers, setTotalDrivers] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [totalDrivers, setTotalDrivers] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
 
   // New state for driver creation
   const [isCreateDriverDialogOpen, setIsCreateDriverDialogOpen] = useState(false)
@@ -67,6 +68,7 @@ export default function DriversPage() {
   const [searchUserQuery, setSearchUserQuery] = useState("")
   const [searchedUsers, setSearchedUsers] = useState<User[]>([])
   const [isSearchingUsers, setIsSearchingUsers] = useState(false)
+  const [hasSearchedUsers, setHasSearchedUsers] = useState(false)
   const [selectedUserForDriver, setSelectedUserForDriver] = useState<User | null>(null)
   const [newDriverData, setNewDriverData] = useState<Omit<CreateDriverPayload, "user_id"> & { user_id?: number }>({
     // user_id is optional here because it's set in step 1
@@ -80,42 +82,58 @@ export default function DriversPage() {
   const [createDriverError, setCreateDriverError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchDrivers()
-  }, [currentPage, statusFilter, directionFilter, searchTerm]) // Added searchTerm to trigger fetch on search
+    fetchAllDrivers()
+  }, [])
 
-  const fetchDrivers = async () => {
+  const fetchAllDrivers = async () => {
     try {
       setIsLoading(true)
-      const filters: Record<string, any> = {}
-      if (statusFilter !== "all") filters.is_approved = statusFilter === "true"
-      if (directionFilter !== "all") filters.direction = directionFilter
-      if (searchTerm.trim()) filters.search = searchTerm.trim()
+      console.log("[v0] Fetching all drivers")
+      let allDriversData: Driver[] = []
+      let page = 1
+      let hasMore = true
 
-      console.log("[v0] Fetching drivers with filters:", filters)
-      const response = await apiClient.getDrivers(currentPage, filters)
-      console.log("[v0] Drivers API response:", {
-        count: response.count,
-        resultsLength: response.results.length,
-        searchTerm: searchTerm.trim(),
+      // Fetch all pages to get all drivers
+      while (hasMore) {
+        const response = await apiClient.getDrivers(page, {}, 50) // Fetch 50 per page
+        allDriversData = [...allDriversData, ...response.results]
+        hasMore = response.next !== null
+        page++
+      }
+
+      console.log("[v0] All drivers fetched:", {
+        count: allDriversData.length,
       })
 
-      setDrivers(response.results)
-      setTotalDrivers(response.count)
-      setTotalPages(Math.max(1, Math.ceil(response.count / PAGE_SIZE)))
+      setAllDrivers(allDriversData)
+      setTotalDrivers(allDriversData.length)
     } catch (error) {
       console.error("Error fetching drivers:", error)
+      toast({
+        title: "Xatolik",
+        description: "Haydovchilarni yuklashda xatolik yuz berdi",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleSearch = () => {
+    setAppliedSearchTerm(searchTerm.trim())
+    setAppliedStatusFilter(statusFilter)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   const handleSearchUsers = async () => {
     if (!searchUserQuery.trim()) {
       setSearchedUsers([])
+      setHasSearchedUsers(false)
       return
     }
     setIsSearchingUsers(true)
     setCreateDriverError(null) // Clear any previous errors
+    setHasSearchedUsers(true)
     try {
       console.log("[v0] Starting user search with query:", searchUserQuery.trim())
       const response = await apiClient.searchUsers(searchUserQuery.trim(), 1)
@@ -172,7 +190,7 @@ export default function DriversPage() {
         car_photo: newDriverData.car_photo,
       }
       const createdDriver = await apiClient.createDriver(payload)
-      setDrivers([createdDriver, ...drivers])
+      setAllDrivers([createdDriver, ...allDrivers])
       setTotalDrivers((prev) => prev + 1)
       setIsCreateDriverDialogOpen(false)
       setCreateDriverStep(1)
@@ -195,7 +213,9 @@ export default function DriversPage() {
   const handleApproveDriver = async (driverId: number, approved: boolean) => {
     try {
       await apiClient.updateDriver(driverId, { is_approved: approved as any })
-      fetchDrivers()
+      setAllDrivers(
+        allDrivers.map((driver) => (driver.id === driverId ? { ...driver, is_approved: approved } : driver)),
+      )
       setIsDialogOpen(false)
     } catch (error) {
       console.error("Error updating driver:", error)
@@ -206,10 +226,20 @@ export default function DriversPage() {
     try {
       setDeletingDriverId(driverId)
       await apiClient.deleteDriver(driverId)
-      setDrivers(drivers.filter((driver) => driver.id !== driverId))
-      setTotalDrivers((prev) => Math.max(0, prev - 1))
-    } catch (error) {
+      setAllDrivers(allDrivers.filter((driver) => driver.id !== driverId))
+      setTotalDrivers((prev) => prev - 1)
+      toast({
+        title: "Muvaffaqiyat",
+        description: "Haydovchi muvaffaqiyatli o'chirildi",
+        variant: "default",
+      })
+    } catch (error: any) {
       console.error("Error deleting driver:", error)
+      toast({
+        title: "Xatolik",
+        description: `Haydovchini o'chirishda xatolik: ${error.message || "Noma'lum xatolik"}`,
+        variant: "destructive",
+      })
     } finally {
       setDeletingDriverId(null)
     }
@@ -217,35 +247,42 @@ export default function DriversPage() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchDrivers()
+    await fetchAllDrivers()
     setIsRefreshing(false)
   }
 
-  // Client-side search by name / phone / id
-  const displayedDrivers = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase()
-    if (!term) return drivers
+  const filteredDrivers = useMemo(() => {
+    let filtered = allDrivers
 
-    console.log("[v0] Applying client-side filter with term:", term)
-    const filtered = drivers.filter((d) => {
-      const name = d.user.full_name?.toLowerCase() || ""
-      const phone = d.user.phone_number?.toLowerCase() || ""
-      const telegramId = String(d.user.telegram_id).toLowerCase()
-      const driverId = String(d.id).toLowerCase()
+    // Apply search filter
+    if (appliedSearchTerm.trim()) {
+      const term = appliedSearchTerm.trim().toLowerCase()
+      filtered = filtered.filter((driver) => {
+        const name = driver.user.full_name?.toLowerCase() || ""
+        const phone = driver.user.phone_number?.toLowerCase() || ""
+        const telegramId = String(driver.user.telegram_id).toLowerCase()
+        const driverId = String(driver.id).toLowerCase()
 
-      const matches =
-        name.includes(term) || phone.includes(term) || telegramId.includes(term) || driverId.includes(term)
+        return name.includes(term) || phone.includes(term) || telegramId.includes(term) || driverId.includes(term)
+      })
+    }
 
-      return matches
-    })
+    // Apply status filter
+    if (appliedStatusFilter !== "all") {
+      filtered = filtered.filter((driver) =>
+        appliedStatusFilter === "true" ? driver.is_approved : !driver.is_approved,
+      )
+    }
 
-    console.log("[v0] Client-side filtering result:", {
-      originalCount: drivers.length,
-      filteredCount: filtered.length,
-      searchTerm: term,
-    })
     return filtered
-  }, [drivers, searchTerm])
+  }, [allDrivers, appliedSearchTerm, appliedStatusFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE))
+  const displayedDrivers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return filteredDrivers.slice(startIndex, endIndex)
+  }, [filteredDrivers, currentPage])
 
   const getStatusBadge = (isApproved: boolean) => {
     return isApproved ? (
@@ -265,7 +302,7 @@ export default function DriversPage() {
     const csvContent = (
       [
         ["ID", "Ism", "Telefon", "Yo'nalish", "Holat", "Ballar", "Reyting"],
-        ...displayedDrivers.map((driver) => [
+        ...filteredDrivers.map((driver) => [
           driver.id.toString(),
           driver.user.full_name || "Noma'lum",
           driver.user.phone_number || "Yo'q",
@@ -288,7 +325,7 @@ export default function DriversPage() {
     window.URL.revokeObjectURL(url)
   }
 
-  if (isLoading && currentPage === 1) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -308,7 +345,7 @@ export default function DriversPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Haydovchilar ro'xati</h1>
-                <p className="text-sm text-gray-500">Jami {totalDrivers.toLocaleString()} ta haydovchi</p>
+                <p className="text-sm text-gray-500">Jami {allDrivers.length.toLocaleString()} ta haydovchi</p>
               </div>
             </div>
             <div className="flex flex-col [@media(max-width:920px)]:flex-col [@media(min-width:921px)]:flex-row items-stretch [@media(max-width:920px)]:items-stretch [@media(min-width:921px)]:items-center gap-2 w-full md:w-auto">
@@ -340,7 +377,13 @@ export default function DriversPage() {
                             id="user-search"
                             placeholder="Qidiruv so'rovi..."
                             value={searchUserQuery}
-                            onChange={(e) => setSearchUserQuery(e.target.value)}
+                            onChange={(e) => {
+                              setSearchUserQuery(e.target.value)
+                              if (hasSearchedUsers) {
+                                setHasSearchedUsers(false)
+                                setSearchedUsers([])
+                              }
+                            }}
                             onKeyPress={(e) => e.key === "Enter" && handleSearchUsers()}
                           />
                           <Button onClick={handleSearchUsers} disabled={isSearchingUsers}>
@@ -376,7 +419,7 @@ export default function DriversPage() {
                         </div>
                       )}
 
-                      {/* {searchedUsers.length === 0 && searchUserQuery.length > 0 && !isSearchingUsers && (
+                      {searchedUsers.length === 0 && hasSearchedUsers && !isSearchingUsers && (
                         <div className="text-center p-4 bg-yellow-50 rounded-md">
                           <p className="text-sm text-yellow-700">
                             "{searchUserQuery}" bo'yicha foydalanuvchilar topilmadi.
@@ -391,7 +434,7 @@ export default function DriversPage() {
                         <div className="text-center p-4 bg-red-50 rounded-md">
                           <p className="text-sm text-red-700">{createDriverError}</p>
                         </div>
-                      )} */}
+                      )}
 
                       <Button
                         onClick={() => setCreateDriverStep(2)}
@@ -497,12 +540,7 @@ export default function DriversPage() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                 Yangilash
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportDrivers}
-                disabled={displayedDrivers.length === 0}
-              >
+              <Button variant="outline" size="sm" onClick={handleExportDrivers} disabled={filteredDrivers.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
                 Eksport
               </Button>
@@ -523,6 +561,7 @@ export default function DriversPage() {
                     placeholder="Haydovchi, telefon yoki ID bo'yicha qidirish..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                     className="pl-10"
                   />
                 </div>
@@ -537,27 +576,36 @@ export default function DriversPage() {
                   <SelectItem value="false">Kutilmoqda</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={directionFilter} onValueChange={setDirectionFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Yo'nalish bo'yicha" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Barcha yo'nalishlar</SelectItem>
-                  <SelectItem value="taxi">Taksi / Pasilka</SelectItem>
-                </SelectContent>
-              </Select>
+              <Button onClick={handleSearch} className="w-full md:w-auto">
+                <Search className="w-4 h-4 mr-2" />
+                Qidirish
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {searchTerm.trim() && (
+        {(appliedSearchTerm.trim() || appliedStatusFilter !== "all") && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700">
-              "{searchTerm}" bo'yicha qidiruv natijasi: {displayedDrivers.length} ta haydovchi topildi
-              {displayedDrivers.length !== totalDrivers && (
-                <span className="text-blue-600"> (jami {totalDrivers} tadan)</span>
+              Qidiruv natijasi: {filteredDrivers.length} ta haydovchi topildi
+              {filteredDrivers.length !== allDrivers.length && (
+                <span className="text-blue-600"> (jami {allDrivers.length} tadan)</span>
               )}
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2 bg-transparent"
+              onClick={() => {
+                setSearchTerm("")
+                setStatusFilter("all")
+                setAppliedSearchTerm("")
+                setAppliedStatusFilter("all")
+                setCurrentPage(1)
+              }}
+            >
+              Barcha filtrlarni tozalash
+            </Button>
           </div>
         )}
 
@@ -823,15 +871,15 @@ export default function DriversPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  {totalDrivers} tadan {(currentPage - 1) * PAGE_SIZE + 1}-
-                  {Math.min(currentPage * PAGE_SIZE, totalDrivers)} ko'rsatilmoqda
+                  {filteredDrivers.length} tadan {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredDrivers.length)} ko'rsatilmoqda
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1 || isLoading}
+                    disabled={currentPage === 1}
                   >
                     Oldingi
                   </Button>
@@ -842,7 +890,7 @@ export default function DriversPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages || isLoading}
+                    disabled={currentPage === totalPages}
                   >
                     Keyingi
                   </Button>
@@ -856,18 +904,15 @@ export default function DriversPage() {
           <div className="text-center py-12">
             <Car className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {searchTerm.trim() ? "Qidiruv bo'yicha haydovchilar topilmadi" : "Haydovchilar topilmadi"}
+              {appliedSearchTerm.trim() || appliedStatusFilter !== "all"
+                ? "Qidiruv bo'yicha haydovchilar topilmadi"
+                : "Haydovchilar topilmadi"}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm.trim()
-                ? `"${searchTerm}" bo'yicha natija yo'q. Boshqa kalit so'zlar bilan qidiring.`
+              {appliedSearchTerm.trim() || appliedStatusFilter !== "all"
+                ? "Qidiruv shartlaringizni o'zgartiring yoki filtrlarni tozalang."
                 : "Qidiruv shartlaringizni o'zgartiring"}
             </p>
-            {searchTerm.trim() && (
-              <Button variant="outline" size="sm" className="mt-3 bg-transparent" onClick={() => setSearchTerm("")}>
-                Qidiruvni tozalash
-              </Button>
-            )}
           </div>
         )}
       </main>
