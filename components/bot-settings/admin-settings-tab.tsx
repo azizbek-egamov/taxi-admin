@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Users, Save, Loader2, CheckCircle, AlertCircle, Search } from "lucide-react"
+import { Users, Save, Loader2, CheckCircle, AlertCircle, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { apiClient, type BotSettings, type User } from "@/lib/api"
 
 export default function AdminSettingsTab() {
@@ -23,17 +23,32 @@ export default function AdminSettingsTab() {
   // Search state
   const [searchQuery, setSearchQuery] = useState("")
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 20
+
   useEffect(() => {
     fetchData()
-  }, [])
+  }, []) // Removed currentPage dependency for frontend pagination
 
   const fetchData = async () => {
     try {
       setIsLoading(true)
-      const [settingsResponse, usersResponse] = await Promise.all([apiClient.getBotSettings(), apiClient.getUsers()])
+      const [settingsResponse] = await Promise.all([apiClient.getBotSettings()])
+
+      // Fetch all users by looping through pages
+      let allUsersData: User[] = []
+      let page = 1
+      let hasMore = true
+
+      while (hasMore) {
+        const usersResponse = await apiClient.getUsers(page, { page_size: 100 })
+        allUsersData = [...allUsersData, ...usersResponse.results]
+        hasMore = usersResponse.next !== null
+        page++
+      }
 
       setSettings(settingsResponse)
-      setAllUsers(usersResponse.results) // Set all users
+      setAllUsers(allUsersData) // Set all users
       setSelectedAdminIds(settingsResponse.admins.map((admin) => admin.id)) // Set initial selected admins
     } catch (error) {
       console.error("Error fetching admin data:", error)
@@ -83,6 +98,24 @@ export default function AdminSettingsTab() {
     )
   }, [allUsers, searchQuery])
 
+  const displayedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return filteredUsers.slice(startIndex, endIndex)
+  }, [filteredUsers, currentPage])
+
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
+  const startItem = filteredUsers.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0
+  const endItem = Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -125,6 +158,39 @@ export default function AdminSettingsTab() {
             className="pl-9"
           />
         </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            {filteredUsers.length > 0 && (
+              <span>
+                {startItem}-{endItem} / {filteredUsers.length} foydalanuvchi
+                {searchQuery && ` (${allUsers.length} dan filterlangan)`}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
         <Button
           onClick={handleSave}
           disabled={isSaving}
@@ -143,8 +209,8 @@ export default function AdminSettingsTab() {
           )}
         </Button>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => (
+          {displayedUsers.length > 0 ? (
+            displayedUsers.map((user) => (
               <div
                 key={user.id}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -177,12 +243,12 @@ export default function AdminSettingsTab() {
           ) : (
             <div className="col-span-full text-center py-8 text-gray-500">
               <Users className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-              <p>Hech qanday foydalanuvchi topilmadi</p>
+              <p>{searchQuery ? "Qidiruv bo'yicha hech narsa topilmadi" : "Hech qanday foydalanuvchi topilmadi"}</p>
             </div>
           )}
         </div>
 
-        {selectedAdminIds.length === 0 && filteredUsers.length > 0 && (
+        {selectedAdminIds.length === 0 && displayedUsers.length > 0 && (
           <div className="text-center py-8 text-gray-500">
             <Users className="mx-auto h-12 w-12 text-gray-400 mb-2" />
             <p>Hech qanday administrator tanlanmagan</p>
